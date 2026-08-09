@@ -1,26 +1,100 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.health import router as health_router
+import httpx
+
+from app.api.routes.agents import router as agent_router
+from app.api.routes.memory import router as memory_router
+from app.api.routes.workflow import router as workflow_router
+from app.api.routes.company import router as company_router
 
 app = FastAPI(
     title="AI Software Company",
     version="1.0.0"
 )
 
-# Allow React frontend to communicate with FastAPI
+# ==========================================
+# CORS
+# ==========================================
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(health_router, prefix="/api")
+# ==========================================
+# API ROUTES
+# ==========================================
+
+# Agents API
+app.include_router(
+    agent_router,
+    prefix="/api",
+    tags=["Agents"]
+)
+
+# Memory API
+app.include_router(
+    memory_router,
+    prefix="/api/memory",
+    tags=["Memory"]
+)
+
+# Workflow Engine API
+app.include_router(
+    workflow_router,
+    prefix="/api",
+    tags=["Workflow"]
+)
+
+# Company API
+app.include_router(
+    company_router,
+    prefix="/api",
+    tags=["Company"]
+)
+
+# ==========================================
+# ROOT
+# ==========================================
 
 @app.get("/")
-def root():
-    return {"message": "AI Software Company Backend Running"}
+async def root():
+    return {
+        "message": "AI Software Company Backend Running"
+    }
+
+# ==========================================
+# SYSTEM STATUS
+# ==========================================
+
+@app.get("/api/status")
+async def status():
+
+    ollama = "Offline"
+
+    try:
+        async with httpx.AsyncClient(timeout=3) as client:
+            response = await client.get(
+                "http://127.0.0.1:11434/api/tags"
+            )
+
+            if response.status_code == 200:
+                ollama = "Online"
+
+    except Exception:
+        ollama = "Offline"
+
+    # Change later when PostgreSQL/MySQL is connected
+    database = "Not Connected"
+
+    return {
+        "version": app.version,
+        "backend": "Online",
+        "frontend": "Online",
+        "ollama": ollama,
+        "database": database,
+        "system": "Healthy"
+    }
