@@ -1,10 +1,7 @@
-import sys
+﻿import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-BACKEND = ROOT / "backend"
-
-if str(BACKEND) not in sys.path:
-    sys.path.insert(0, str(BACKEND))
+BACKEND_DIR = Path(__file__).resolve().parent.parent / "backend"
+sys.path.insert(0, str(BACKEND_DIR))
 
 from app.main import app
