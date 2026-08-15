@@ -1,0 +1,19 @@
+# backend/requirements.txt
+
+# Required libraries for the customer management module
+requests==2.26.0
+flask==1.1.2
+psycopg2-binary==2.3.9
+sqlalchemy==1.4.45
+```
+
+This file includes the required Python libraries for building a simple customer management module with login functionality, database integration, API component, frontend component, and high priority.
+
+### Explanation of Requirements
+
+- **Requests**: A library for making HTTP requests in Python.
+- **Flask**: A micro web framework that allows you to build web applications using Python.
+- **psycopg2-binary**: A PostgreSQL adapter for Python, allowing Python to connect to the database.
+- **SQLAlchemy**: An object-relational mapping (ORM) tool for Python.
+
+These libraries are essential for handling HTTP requests, routing and managing data in a web application.

@@ -1,0 +1,286 @@
+﻿import json
+import re
+from pathlib import Path
+
+from app.agents.base_agent import BaseAgent
+from app.generators.backend_generator import BackendGenerator
+from app.generators.main_generator import MainGenerator
+from app.memory.project_memory import memory
+
+
+class BackendAgent(BaseAgent):
+
+    def __init__(self):
+        super().__init__(
+            "backend",
+            "Senior FastAPI Backend Engineer"
+        )
+
+    async def run(self, task: str):
+        return await self.develop_backend(task)
+
+    async def develop_backend(self, task: str):
+
+        print("Backend Agent Started")
+
+        # =====================================================
+        # READ APPROVED UPSTREAM AGENT OUTPUTS
+        # =====================================================
+
+        ceo_summary = memory.get("ceo") or ""
+
+        pm_plan = memory.get("pm") or ""
+
+        cto_architecture = memory.get("cto") or ""
+
+        file_planner_raw = memory.get("file_planner") or ""
+
+        # =====================================================
+        # READ FILE BLUEPRINT
+        # =====================================================
+
+        try:
+
+            blueprint = json.loads(file_planner_raw)
+
+            backend_files = blueprint.get(
+                "backend",
+                []
+            )
+
+        except Exception as exc:
+
+            print(
+                f"Invalid File Planner blueprint: {exc}"
+            )
+
+            backend_files = [
+                "backend/app/main.py",
+                "backend/requirements.txt"
+            ]
+
+        if not backend_files:
+
+            raise RuntimeError(
+                "File Planner returned no backend files."
+            )
+
+        print(
+            f"Backend files approved: {len(backend_files)}"
+        )
+
+        # =====================================================
+        # GENERATION CONTEXT
+        # =====================================================
+
+        generated = []
+
+        for index, filepath in enumerate(
+            backend_files,
+            start=1
+        ):
+
+            print("=" * 60)
+            print(
+                f"Generating {index}/{len(backend_files)}"
+            )
+            print(filepath)
+            print("=" * 60)
+
+            # =================================================
+            # MAIN APPLICATION
+            # =================================================
+
+            if filepath.endswith("main.py"):
+
+                generator = MainGenerator()
+
+                code = await generator.generate(
+                    filepath=filepath,
+                    ceo_summary=ceo_summary,
+                    project_plan=pm_plan,
+                    architecture=cto_architecture,
+                    task=task
+                )
+
+            # =================================================
+            # OTHER BACKEND FILES
+            # =================================================
+
+            else:
+
+                prompt = f"""
+You are the Senior FastAPI Backend Engineer
+for an AI Software Company.
+
+You are downstream from these approved agents:
+
+CEO
+Project Manager
+CTO
+File Planner
+
+You MUST follow their decisions.
+
+==================================================
+CEO ANALYSIS
+==================================================
+
+{ceo_summary}
+
+==================================================
+PROJECT MANAGER PLAN
+==================================================
+
+{pm_plan}
+
+==================================================
+CTO ARCHITECTURE
+==================================================
+
+{cto_architecture}
+
+==================================================
+APPROVED FILE BLUEPRINT
+==================================================
+
+{json.dumps(blueprint, indent=4)}
+
+==================================================
+CURRENT TARGET FILE
+==================================================
+
+{filepath}
+
+==================================================
+ORIGINAL TASK
+==================================================
+
+{task}
+
+==================================================
+STRICT RULES
+==================================================
+
+1. Generate ONLY the requested file.
+
+2. The generated code must be valid Python
+   unless the target file explicitly requires
+   another format.
+
+3. Follow the CTO architecture.
+
+4. Follow the File Planner blueprint.
+
+5. Do not invent unnecessary files.
+
+6. Do not modify other files.
+
+7. Do not include Markdown.
+
+8. Do not include explanations.
+
+9. Do not use triple backticks.
+
+10. Start directly with the file contents.
+
+11. Keep imports compatible with the existing
+    project structure.
+
+12. Use FastAPI conventions.
+
+13. Use secure coding practices.
+
+14. Do not hard-code secrets.
+
+15. Return complete usable code.
+
+Generate ONLY:
+
+{filepath}
+"""
+
+                code = await self.think(prompt)
+
+                # Clean accidental Markdown fences.
+                code = re.sub(
+                    r"^```[a-zA-Z0-9_+-]*\s*",
+                    "",
+                    code.strip()
+                )
+
+                code = re.sub(
+                    r"\s*```$",
+                    "",
+                    code.strip()
+                )
+
+                code = code.replace(
+                    "===END===",
+                    ""
+                ).strip()
+
+            # =================================================
+            # SAVE TO AGENT WORKSPACE
+            # =================================================
+
+            self.project_memory.write(
+                filepath,
+                code
+            )
+
+            # =================================================
+            # SAVE ACTUAL GENERATED PROJECT
+            # =================================================
+
+            output_file = (
+                Path("generated_code") / filepath
+            )
+
+            output_file.parent.mkdir(
+                parents=True,
+                exist_ok=True
+            )
+
+            output_file.write_text(
+                code,
+                encoding="utf-8"
+            )
+
+            print(
+                f"Saved: {output_file}"
+            )
+
+            generated.append(filepath)
+
+        # =====================================================
+        # SAVE BACKEND RESULT TO SHARED MEMORY
+        # =====================================================
+
+        backend_result = json.dumps(
+            {
+                "generated_files": generated,
+                "count": len(generated),
+                "status": "completed"
+            },
+            indent=4
+        )
+
+        memory.save(
+            "backend",
+            backend_result
+        )
+
+        self.project_memory.write(
+            "backend/backend_generation_result.md",
+            backend_result
+        )
+
+        print("=" * 60)
+        print("Backend Generation Complete")
+        print(
+            f"Generated {len(generated)} backend files."
+        )
+        print("=" * 60)
+
+        return generated
