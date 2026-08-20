@@ -1,4 +1,4 @@
-from app.generators.base_generator import BaseGenerator
+﻿from app.generators.base_generator import BaseGenerator
 
 
 class FrontendGenerator(BaseGenerator):
@@ -10,3 +10,4 @@ class FrontendGenerator(BaseGenerator):
         self.save(path, code)
 
         return self.create_result(path, code)
+

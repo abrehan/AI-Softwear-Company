@@ -1,4 +1,4 @@
-from typing import List
+﻿from typing import List
 from app.planner.task import Task
 
 
@@ -32,3 +32,4 @@ class TaskQueue:
 
     def all(self):
         return self.tasks
+

@@ -1,4 +1,4 @@
-from app.services.ollama_service import OllamaService
+﻿from app.services.ollama_service import OllamaService
 from app.services.model_router import ModelRouter
 import re
 
@@ -54,3 +54,4 @@ Rules:
         code = code.strip()
 
         return code
+

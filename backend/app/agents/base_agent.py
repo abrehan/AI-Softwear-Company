@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pathlib import Path
 
 from app.services.ollama_service import OllamaService
@@ -36,7 +36,7 @@ class BaseAgent:
         if os.getenv("VERCEL"):
             self.workspace = Path("/tmp/ai-software-company/workspace")
         else:
-            self.workspace = Path("app/workspace")
+            self.workspace = Path(__file__).resolve().parents[1] / "workspace"
 
         self.workspace.mkdir(parents=True, exist_ok=True)
 
@@ -96,3 +96,4 @@ Task:
         Retrieve information from project memory.
         """
         return self.project_memory.get(key)
+

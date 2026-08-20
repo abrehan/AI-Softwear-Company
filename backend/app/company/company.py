@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+﻿from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.company.ai_company import AICompany
@@ -27,3 +27,4 @@ async def build(request: ProjectRequest):
         "status": "success",
         "agents": list(result.keys())
     }
+

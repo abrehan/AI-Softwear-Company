@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class MarketingAgent(BaseAgent):
 
     async def marketing_plan(self, task: str):
 
-        print("📣 Marketing Manager Started")
+        print("ðŸ“£ Marketing Manager Started")
 
         ceo_summary = memory.get("ceo") or ""
         business_analysis = memory.get("business") or ""
@@ -95,6 +95,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Marketing plan saved")
+        print("ðŸ’¾ Marketing plan saved")
 
         return result
+

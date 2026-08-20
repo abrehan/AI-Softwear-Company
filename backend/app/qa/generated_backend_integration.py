@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import importlib
 from pathlib import Path
 
@@ -8,21 +8,21 @@ GENERATED_ROOT = PROJECT_ROOT / "generated_code"
 sys.path.insert(0, str(GENERATED_ROOT))
 
 MODULES = [
-    "backend.app.database",
-    "backend.app.main",
-    "backend.app.api.routes.auth",
-    "backend.app.api.routes.projects",
-    "backend.app.api.routes.users",
-    "backend.app.core.config",
-    "backend.app.core.security",
-    "backend.app.models.project",
-    "backend.app.models.user",
-    "backend.app.schemas.project",
-    "backend.app.schemas.user",
-    "backend.app.services.auth_service",
-    "backend.app.services.project_service",
-    "backend.app.services.user_service",
-    "backend.app.utils.helpers",
+    "app.database",
+    "app.main",
+    "app.api.routes.auth",
+    "app.api.routes.projects",
+    "app.api.routes.users",
+    "app.core.config",
+    "app.core.security",
+    "app.models.project",
+    "app.models.user",
+    "app.schemas.project",
+    "app.schemas.user",
+    "app.services.auth_service",
+    "app.services.project_service",
+    "app.services.user_service",
+    "app.utils.helpers",
 ]
 
 
@@ -77,3 +77,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

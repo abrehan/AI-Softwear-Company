@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 from app.managers.agent_manager import AgentManager
 
 
@@ -9,7 +9,7 @@ class Company:
 
     async def execute_project(self, task: str):
 
-        print("🏢 AI Company Started")
+        print("ðŸ¢ AI Company Started")
 
         agents = self.manager.list_agents()
 
@@ -22,18 +22,18 @@ class Company:
 
             async with semaphore:
 
-                print(f"🚀 Starting {agent_name.upper()} Agent...")
+                print(f"ðŸš€ Starting {agent_name.upper()} Agent...")
 
                 try:
                     result = await self.manager.execute(agent_name, task)
 
-                    print(f"✅ Finished {agent_name.upper()} Agent")
+                    print(f"âœ… Finished {agent_name.upper()} Agent")
 
                     return agent_name, result
 
                 except Exception as e:
 
-                    print(f"❌ {agent_name.upper()} Error:", e)
+                    print(f"âŒ {agent_name.upper()} Error:", e)
 
                     return agent_name, str(e)
 
@@ -42,3 +42,4 @@ class Company:
         results = await asyncio.gather(*tasks)
 
         return {name: result for name, result in results}
+

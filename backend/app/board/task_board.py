@@ -1,4 +1,4 @@
-from app.board.task import Task
+﻿from app.board.task import Task
 from app.board.task_status import TaskStatus
 
 
@@ -28,7 +28,7 @@ class TaskBoard:
 
         self.tasks.append(task)
 
-        print(f"📋 Task Created: {title}")
+        print(f"ðŸ“‹ Task Created: {title}")
 
         return task
 
@@ -86,3 +86,4 @@ class TaskBoard:
 
 
 board = TaskBoard()
+

@@ -1,4 +1,4 @@
-from app.generators.base_generator import BaseGenerator
+﻿from app.generators.base_generator import BaseGenerator
 
 
 class DockerGenerator(BaseGenerator):
@@ -10,3 +10,4 @@ class DockerGenerator(BaseGenerator):
         self.save(path, dockerfile)
 
         return self.create_result(path, dockerfile)
+

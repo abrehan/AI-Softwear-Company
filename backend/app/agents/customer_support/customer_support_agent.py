@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -17,7 +17,7 @@ class CustomerSupportAgent(BaseAgent):
 
     async def customer_support(self, task: str):
 
-        print("🎧 Customer Support Started")
+        print("ðŸŽ§ Customer Support Started")
 
         ceo_summary = memory.get("ceo") or ""
         business_analysis = memory.get("business") or ""
@@ -118,6 +118,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Customer support plan saved")
+        print("ðŸ’¾ Customer support plan saved")
 
         return result
+

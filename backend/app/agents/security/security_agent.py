@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class SecurityAgent(BaseAgent):
 
     async def security_review(self, task: str):
 
-        print("🔒 Security Agent Started")
+        print("ðŸ”’ Security Agent Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -126,6 +126,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Security report saved")
+        print("ðŸ’¾ Security report saved")
 
         return result
+

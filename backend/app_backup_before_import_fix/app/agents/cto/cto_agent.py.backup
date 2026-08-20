@@ -1,0 +1,356 @@
+﻿from backend.app.agents.base_agent import BaseAgent
+from backend.app.memory.project_memory import memory
+from backend.app.workspace.workspace import workspace
+
+
+class CTOAgent(BaseAgent):
+
+    def __init__(self):
+        super().__init__(
+            "CTO Agent",
+            "Chief Technology Officer",
+            agent_key="cto",
+        )
+
+        self.model = "llama3.2:3b"
+
+    async def run(self, task: str):
+        return await self.design_architecture(task)
+
+    async def design_architecture(self, task: str):
+
+        print("CTO Agent Started")
+
+        authoritative_context = self._load_authoritative_context()
+        ceo_summary = memory.get("ceo") or ""
+        pm_plan = memory.get("pm") or ""
+
+        controlled_context = f"""
+===================================================
+AUTHORITATIVE PROJECT CONTEXT
+===================================================
+
+{authoritative_context}
+
+===================================================
+CEO ANALYSIS
+===================================================
+
+{ceo_summary}
+
+===================================================
+PROJECT MANAGER PLAN
+===================================================
+
+{pm_plan}
+"""
+
+        prompt = f"""
+You are the Chief Technology Officer of the AI Software Company.
+
+Your job is to produce a technical architecture decision document.
+
+ORIGINAL PROJECT REQUEST:
+{task}
+
+===================================================
+SOURCE AUTHORITY RULE
+===================================================
+
+There are three information sources:
+
+1. AUTHORITATIVE PROJECT CONTEXT
+2. CEO ANALYSIS
+3. PROJECT MANAGER PLAN
+
+Only AUTHORITATIVE PROJECT CONTEXT defines confirmed project facts.
+
+CEO and PM documents may contain recommendations or interpretations.
+They must NEVER upgrade a recommendation into a confirmed fact.
+
+===================================================
+STRICT FACTUALITY RULES
+===================================================
+
+NEVER invent or assume:
+
+- database technology
+- frontend technology
+- authentication technology
+- authorization technology
+- infrastructure
+- Docker
+- Kubernetes
+- Redis
+- Celery
+- Jenkins
+- Prometheus
+- HAProxy
+- PostgreSQL
+- React
+- Redux
+- Material-UI
+- OAuth2
+- vector databases
+- cloud providers
+- deployment platforms
+- budgets
+- deadlines
+- dates
+- KPIs
+- customers
+- employees
+- revenue
+- complexity
+- required teams
+- completed work
+- technical decisions
+
+If an item is not explicitly confirmed, write:
+
+"Not provided in current project context."
+
+===================================================
+CONFIRMED ARCHITECTURE RULE
+===================================================
+
+Only these currently confirmed technical facts may be
+described as existing architecture:
+
+- FastAPI backend
+- Python
+- SQLAlchemy database layer
+- Agent Registry
+- REST API
+- Ollama local AI integration
+- Model Router
+- Project memory/workspace system
+
+Confirmed Ollama endpoint:
+
+http://127.0.0.1:11434
+
+Confirmed models include:
+
+- llama3.2:1b
+- llama3.2:3b
+- llama3.1:8b
+- qwen2.5-coder:7b
+- qwen2.5-coder:32b
+- deepseek-coder:6.7b
+- deepseek-coder-v2:latest
+
+Do not add technologies to this confirmed list.
+
+===================================================
+DEVELOPMENT DIRECTION
+===================================================
+
+The confirmed current development direction is exactly:
+
+"The next development focus is to stabilize the Virtual AI Office
+orchestration and context system before expanding autonomous code
+generation."
+
+Do not change this statement.
+
+===================================================
+RECOMMENDATION RULE
+===================================================
+
+Technology that is NOT confirmed may be proposed only under:
+
+"RECOMMENDED"
+
+or
+
+"PROPOSED"
+
+Never present a recommendation as an existing system component.
+
+Example:
+
+CONFIRMED:
+- FastAPI
+- Python
+
+RECOMMENDED:
+- Background job mechanism for long-running AI generation
+
+Do NOT write:
+
+"Current infrastructure uses Celery."
+
+unless Celery is explicitly confirmed.
+
+===================================================
+ARCHITECTURE PRIORITY
+===================================================
+
+The architecture recommendations must prioritize stabilization
+of:
+
+1. Authoritative project context
+2. CEO decision flow
+3. Project Manager planning flow
+4. CTO architecture flow
+5. Agent responsibility boundaries
+6. Context isolation
+7. Generated workspace handling
+8. Code verification
+9. QA validation
+10. Security validation
+11. DevOps validation
+
+Autonomous code generation comes AFTER these stabilization
+requirements.
+
+===================================================
+OUTPUT REQUIREMENTS
+===================================================
+
+Return Markdown using exactly these sections:
+
+# System Architecture
+
+## Project Overview
+
+## Confirmed Current Architecture
+
+List ONLY confirmed architecture.
+
+## Current Confirmed AI Engine
+
+List ONLY confirmed AI engine information.
+
+## Current Confirmed Agent Registry
+
+List ONLY confirmed agent roles.
+
+## Architecture Gaps
+
+For each gap, state:
+
+- Area
+- Confirmed status
+- Missing information
+
+Rules:
+
+- Only call something confirmed if it exists explicitly in AUTHORITATIVE PROJECT CONTEXT.
+- If the area is not confirmed, write:
+  "Not provided in current project context."
+- Do not write "Missing information: None" when the status itself is not confirmed.
+- Do not invent missing information.
+- Do not infer architecture from general software engineering knowledge.
+
+## Recommended Technology Architecture
+
+Clearly mark every item as:
+
+- Confirmed
+- Recommended
+- Not provided in current project context
+
+### Backend
+
+### Frontend
+
+### Database
+
+### Infrastructure
+
+### AI Layer
+
+### Security
+
+### Scalability
+
+## Orchestration Architecture
+
+Clearly separate confirmed facts from recommendations.
+
+## Context Architecture
+
+Clearly separate:
+
+- Authoritative context
+- Agent decision outputs
+- Generated/untrusted workspace content
+
+## Agent Responsibility Boundaries
+
+Do not invent responsibilities as confirmed facts.
+
+Use "Recommended responsibility" when proposing responsibilities.
+
+## Testing Strategy
+
+Clearly label recommendations as recommendations.
+
+## Logging
+
+Clearly label recommendations as recommendations.
+
+## Risks
+
+Only confirmed risks may be called confirmed risks.
+
+Otherwise use "Potential risk" or "Not provided in current project context."
+
+## Next Implementation Sequence
+
+Base this on the confirmed development direction.
+
+Clearly distinguish confirmed sequence from recommended implementation steps.
+
+## Recommendations
+
+List only practical recommendations.
+
+Do not describe recommendations as completed work.
+
+===================================================
+FINAL SAFETY CHECK
+===================================================
+
+Before returning the answer, check every technical technology,
+team, complexity statement, infrastructure statement, and project
+status statement.
+
+If it is not explicitly confirmed by AUTHORITATIVE PROJECT CONTEXT,
+do not present it as a fact.
+
+Do not add extra sections.
+"""
+
+        result = await self.think_with_context(
+            prompt,
+            controlled_context=controlled_context,
+        )
+
+        self.remember("cto", result)
+
+        memory.save("cto", result)
+
+        workspace.save(
+            "architecture/system_architecture.md",
+            result,
+        )
+
+        print("Architecture saved")
+
+        return result
+
+    def _load_authoritative_context(self) -> str:
+
+        context_file = self.workspace / "project_context.md"
+
+        if not context_file.exists():
+            return "Not provided in current project context."
+
+        return context_file.read_text(
+            encoding="utf-8",
+            errors="ignore"
+        )
+

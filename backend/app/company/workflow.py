@@ -1,4 +1,4 @@
-from app.company.ai_company import AICompany
+﻿from app.company.ai_company import AICompany
 from app.company.project_state import ProjectState
 
 from app.planner.planner import ProjectPlanner
@@ -22,7 +22,7 @@ class WorkflowEngine:
 
     async def run(self, project):
 
-        print("🏢 AI Software Company Started")
+        print("ðŸ¢ AI Software Company Started")
 
         self.state.start()
 
@@ -51,7 +51,7 @@ class WorkflowEngine:
 
                     self.state.set_task(task.title)
 
-                    print(f"▶ {task.title}")
+                    print(f"â–¶ {task.title}")
 
                     try:
 
@@ -64,7 +64,7 @@ class WorkflowEngine:
 
                         self.state.completed += 1
 
-                        print(f"✅ {task.title}")
+                        print(f"âœ… {task.title}")
 
                     except Exception as e:
 
@@ -84,6 +84,7 @@ class WorkflowEngine:
 
         self.state.finish()
 
-        print("🎉 Project Finished")
+        print("ðŸŽ‰ Project Finished")
 
         return self.queue.all()
+

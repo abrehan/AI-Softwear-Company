@@ -1,4 +1,4 @@
-from app.builders.project_builder import ProjectBuilder
+﻿from app.builders.project_builder import ProjectBuilder
 
 
 class AICompany:
@@ -13,6 +13,7 @@ class AICompany:
             project_name
         )
 
-        print(f"📁 Project created: {project}")
+        print(f"ðŸ“ Project created: {project}")
 
         return project
+

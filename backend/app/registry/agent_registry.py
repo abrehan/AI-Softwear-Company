@@ -1,4 +1,4 @@
-from app.agents.ceo.ceo_agent import CEOAgent
+﻿from app.agents.ceo.ceo_agent import CEOAgent
 from app.agents.project_manager.project_manager_agent import ProjectManagerAgent
 from app.agents.cto.cto_agent import CTOAgent
 
@@ -35,7 +35,7 @@ class AgentRegistry:
         self.agents = {
             "ceo": CEOAgent,
             "pm": ProjectManagerAgent,
-	    "project_manager": ProjectManagerAgent,
+            "project_manager": ProjectManagerAgent,
             "cto": CTOAgent,
             "file_planner": FilePlannerAgent,
             "backend": BackendAgent,
@@ -65,7 +65,6 @@ class AgentRegistry:
         }
 
     def get_agent(self, name: str):
-        """Return the registered agent CLASS."""
         agent_class = self.agents.get(name)
 
         if agent_class is None:
@@ -74,9 +73,15 @@ class AgentRegistry:
         return agent_class
 
     def get(self, name: str):
-        """Backward-compatible alias for get_agent()."""
         return self.get_agent(name)
 
     def list(self):
-        """Return all registered agent names."""
         return list(self.agents.keys())
+
+    def list_agents(self):
+        return self.list()
+
+
+registry = AgentRegistry()
+
+

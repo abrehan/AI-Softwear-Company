@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class MLEngineerAgent(BaseAgent):
 
     async def design_ml_system(self, task: str):
 
-        print("🧠 ML Engineer Started")
+        print("ðŸ§  ML Engineer Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -114,6 +114,7 @@ Return Markdown.
             result
         )
 
-        print("💾 ML engineering saved")
+        print("ðŸ’¾ ML engineering saved")
 
         return result
+

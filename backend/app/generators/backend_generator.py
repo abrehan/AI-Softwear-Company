@@ -1,4 +1,4 @@
-from app.generators.code_generator import CodeGenerator
+﻿from app.generators.code_generator import CodeGenerator
 
 
 class BackendGenerator:
@@ -10,3 +10,4 @@ class BackendGenerator:
     def generate(self, response: str):
 
         return self.generator.generate(response)
+

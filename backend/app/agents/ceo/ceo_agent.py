@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -110,3 +110,4 @@ Do not add extra sections.
         )
 
         return result
+

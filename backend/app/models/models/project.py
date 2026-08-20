@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 
-from backend.app.database import Base
+from app.database import Base
 
 
 class Project(Base):
@@ -42,3 +42,5 @@ class Project(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
+
+

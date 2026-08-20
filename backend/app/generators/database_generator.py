@@ -1,4 +1,4 @@
-from app.generators.base_generator import BaseGenerator
+﻿from app.generators.base_generator import BaseGenerator
 
 
 class DatabaseGenerator(BaseGenerator):
@@ -10,3 +10,4 @@ class DatabaseGenerator(BaseGenerator):
         self.save(path, sql)
 
         return self.create_result(path, sql)
+

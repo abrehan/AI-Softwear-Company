@@ -1,7 +1,7 @@
 ﻿from sqlalchemy import Boolean, Column, DateTime, Integer, String
 from datetime import datetime
 
-from backend.app.database import Base
+from app.database import Base
 
 
 class User(Base):
@@ -39,3 +39,5 @@ class User(Base):
         default=datetime.utcnow,
         nullable=False,
     )
+
+

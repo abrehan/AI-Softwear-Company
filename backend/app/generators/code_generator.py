@@ -1,4 +1,4 @@
-from app.generators.parser import FileParser
+﻿from app.generators.parser import FileParser
 from app.generators.file_writer import FileWriter
 
 
@@ -20,3 +20,4 @@ class CodeGenerator:
             )
 
         return files
+

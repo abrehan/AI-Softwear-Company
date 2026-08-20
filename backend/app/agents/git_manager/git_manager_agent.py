@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class GitManagerAgent(BaseAgent):
 
     async def manage_git(self, task: str):
 
-        print("🌿 Git Manager Started")
+        print("ðŸŒ¿ Git Manager Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -107,6 +107,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Git strategy saved")
+        print("ðŸ’¾ Git strategy saved")
 
         return result
+

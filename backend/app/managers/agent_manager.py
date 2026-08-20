@@ -1,4 +1,4 @@
-from app.registry.agent_registry import AgentRegistry
+﻿from app.registry.agent_registry import AgentRegistry
 
 
 class AgentManager:
@@ -36,3 +36,4 @@ class AgentManager:
 
     def reset(self):
         self.instances.clear()
+

@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class BusinessAnalystAgent(BaseAgent):
 
     async def analyze_business(self, task: str):
 
-        print("📊 Business Analyst Started")
+        print("ðŸ“Š Business Analyst Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -108,6 +108,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Business analysis saved")
+        print("ðŸ’¾ Business analysis saved")
 
         return result
+

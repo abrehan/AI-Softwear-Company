@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class DevOpsAgent(BaseAgent):
 
     async def deploy_project(self, task: str):
 
-        print("🚀 DevOps Agent Started")
+        print("ðŸš€ DevOps Agent Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -130,6 +130,7 @@ Return the result in Markdown.
             result
         )
 
-        print("💾 DevOps deployment saved")
+        print("ðŸ’¾ DevOps deployment saved")
 
         return result
+

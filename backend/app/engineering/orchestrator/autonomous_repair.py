@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 from typing import Any
@@ -16,16 +16,16 @@ from app.engineering.repair.repair_agent import (
 
 class AutonomousRepairLoop:
     """
-    Phase 4 — Step 6
+    Phase 4 â€” Step 6
 
     Coordinates:
 
         Validator
-            ↓
+            â†“
         Error Analyzer
-            ↓
+            â†“
         Repair Agent
-            ↓
+            â†“
         Validator again
 
     The loop stops when:
@@ -79,7 +79,7 @@ class AutonomousRepairLoop:
 
         print()
         print("=" * 60)
-        print("🧠 ERROR ANALYSIS")
+        print("ðŸ§  ERROR ANALYSIS")
         print("=" * 60)
 
         print(
@@ -107,7 +107,7 @@ class AutonomousRepairLoop:
         ) == 0:
 
             print(
-                "⚠️ No automatic repairs available."
+                "âš ï¸ No automatic repairs available."
             )
 
             return {
@@ -144,7 +144,7 @@ class AutonomousRepairLoop:
     async def run(self) -> dict[str, Any]:
 
         print("=" * 60)
-        print("🤖 PHASE 4 — AUTONOMOUS REPAIR LOOP")
+        print("ðŸ¤– PHASE 4 â€” AUTONOMOUS REPAIR LOOP")
         print("=" * 60)
 
         history = []
@@ -154,7 +154,7 @@ class AutonomousRepairLoop:
         # -----------------------------------------------------
 
         print()
-        print("🔎 Initial project validation...")
+        print("ðŸ”Ž Initial project validation...")
 
         validation = await self.validate_project()
 
@@ -175,7 +175,7 @@ class AutonomousRepairLoop:
 
             print()
             print(
-                "🎉 PROJECT IS ALREADY HEALTHY"
+                "ðŸŽ‰ PROJECT IS ALREADY HEALTHY"
             )
 
             return {
@@ -201,7 +201,7 @@ class AutonomousRepairLoop:
             print()
             print("=" * 60)
             print(
-                f"🔧 REPAIR ATTEMPT "
+                f"ðŸ”§ REPAIR ATTEMPT "
                 f"{attempt}/{self.max_attempts}"
             )
             print("=" * 60)
@@ -233,7 +233,7 @@ class AutonomousRepairLoop:
 
                 print()
                 print(
-                    "❌ Automatic repair failed."
+                    "âŒ Automatic repair failed."
                 )
 
                 return {
@@ -253,7 +253,7 @@ class AutonomousRepairLoop:
 
             print()
             print(
-                "🔎 Validating repaired project..."
+                "ðŸ”Ž Validating repaired project..."
             )
 
             validation = (
@@ -278,7 +278,7 @@ class AutonomousRepairLoop:
                 print()
                 print("=" * 60)
                 print(
-                    "🎉 AUTONOMOUS REPAIR "
+                    "ðŸŽ‰ AUTONOMOUS REPAIR "
                     "SUCCESSFUL"
                 )
                 print("=" * 60)
@@ -305,7 +305,7 @@ class AutonomousRepairLoop:
 
             print()
             print(
-                f"⚠️ Project still has "
+                f"âš ï¸ Project still has "
                 f"{remaining} error(s)."
             )
 
@@ -316,7 +316,7 @@ class AutonomousRepairLoop:
         print()
         print("=" * 60)
         print(
-            "🛑 MAXIMUM REPAIR ATTEMPTS REACHED"
+            "ðŸ›‘ MAXIMUM REPAIR ATTEMPTS REACHED"
         )
         print("=" * 60)
 
@@ -355,3 +355,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+

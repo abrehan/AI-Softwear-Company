@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 
 
 class RecruiterAgent(BaseAgent):
@@ -11,7 +11,7 @@ class RecruiterAgent(BaseAgent):
         self.model = "llama3.2:1b"
 
     async def run(self, task):
-        print("✅ recruit_team() called")
+        print("âœ… recruit_team() called")
 
         prompt = f"""
 Recruitment plan.
@@ -29,3 +29,4 @@ Include:
         result = await self.think_with_context(task)
         self.remember(task, result)
         return result
+

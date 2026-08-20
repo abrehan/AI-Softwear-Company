@@ -1,0 +1,753 @@
+﻿from backend.app.agents.base_agent import BaseAgent
+from backend.app.memory.project_memory import memory
+from backend.app.workspace.workspace import workspace
+from backend.app.agents.cto.cto_output_validator import validate_cto_output
+
+
+class CTOAgent(BaseAgent):
+
+    def __init__(self):
+        super().__init__(
+            "CTO Agent",
+            "Chief Technology Officer",
+            agent_key="cto",
+        )
+
+        # Explicit CTO model.
+        self.model = "llama3.1:8b"
+
+    async def run(self, task: str):
+        return await self.design_architecture(task)
+
+    async def design_architecture(self, task: str):
+
+        print("CTO Agent Started")
+
+        # =====================================================
+        # AUTHORITATIVE CONTEXT
+        # =====================================================
+
+        authoritative_context = self._load_authoritative_context()
+
+        if not authoritative_context.strip():
+            authoritative_context = (
+                "Not provided in current project context."
+            )
+
+        # =====================================================
+        # DECISION INPUTS
+        # =====================================================
+
+        ceo_summary = memory.get("ceo") or (
+            "Not provided in current project context."
+        )
+
+        pm_plan = memory.get("pm") or (
+            "Not provided in current project context."
+        )
+
+        # Prevent unnecessarily huge prompts.
+        authoritative_context = self._limit_context(
+            authoritative_context,
+            5000,
+        )
+
+        ceo_summary = self._limit_context(
+            ceo_summary,
+            2500,
+        )
+
+        pm_plan = self._limit_context(
+            pm_plan,
+            3500,
+        )
+
+        task = self._limit_context(
+            task or "",
+            2000,
+        )
+
+        print(
+            "[CTO] Context sizes:",
+            f"authoritative={len(authoritative_context):,}",
+            f"ceo={len(ceo_summary):,}",
+            f"pm={len(pm_plan):,}",
+            f"task={len(task):,}",
+        )
+
+        # =====================================================
+        # CONTROLLED DECISION CONTEXT
+        # =====================================================
+
+        controlled_context = f"""
+AUTHORITATIVE PROJECT CONTEXT
+==============================
+{authoritative_context}
+
+CEO DECISION INPUT
+==================
+{ceo_summary}
+
+PROJECT MANAGER DECISION INPUT
+==============================
+{pm_plan}
+"""
+
+        # =====================================================
+        # CTO PROMPT
+        # =====================================================
+
+        prompt = f"""
+You are the Chief Technology Officer of the AI Software Company.
+
+Produce ONLY the requested technical architecture document.
+
+============================================================
+OUTPUT FORMAT - NON-NEGOTIABLE
+============================================================
+
+You MUST use exactly these headings and in exactly this order:
+
+# System Architecture
+## Project Overview
+## Confirmed Current Architecture
+## Architecture Gaps
+## Recommended Technology Architecture
+## Orchestration Architecture
+## Context Architecture
+## Agent Responsibility Boundaries
+## Testing Strategy
+## Logging
+## Risks
+## Next Implementation Sequence
+## Recommendations
+
+Do not rename, remove, merge, or reorder these headings.
+
+============================================================
+FACTUALITY - NON-NEGOTIABLE
+============================================================
+
+The AUTHORITATIVE PROJECT CONTEXT is the ONLY source of
+confirmed project facts.
+
+CEO analysis and PM planning are NOT authoritative facts.
+
+Never invent project facts.
+
+If something is not explicitly present in the authoritative
+project context, write:
+
+Not provided in current project context.
+
+============================================================
+CONFIRMED CURRENT ARCHITECTURE
+============================================================
+
+This section may contain ONLY technologies and components
+explicitly confirmed by the authoritative project context.
+
+Do NOT put recommendations in this section.
+
+Do NOT add technologies because they are common or desirable.
+
+============================================================
+ARCHITECTURE GAPS
+============================================================
+
+For every unknown architectural area, write:
+
+Not provided in current project context.
+
+Do not invent missing infrastructure.
+
+============================================================
+RECOMMENDED TECHNOLOGY ARCHITECTURE
+============================================================
+
+Recommendations are allowed in this section.
+
+EVERY recommendation MUST begin with:
+
+Recommended:
+
+Example:
+
+Recommended: React for the frontend.
+
+Recommended: PostgreSQL for the database.
+
+Never describe a recommendation as:
+
+- Current
+- Existing
+- Implemented
+- Working
+- Confirmed
+
+============================================================
+ORCHESTRATION / CONTEXT
+============================================================
+
+Do not invent an existing orchestration architecture.
+
+If it is not confirmed, write:
+
+Not provided in current project context.
+
+A proposed architecture MUST begin with:
+
+Recommended:
+
+============================================================
+AGENT RESPONSIBILITY BOUNDARIES
+============================================================
+
+Never invent agent responsibilities.
+
+If responsibilities are not explicitly confirmed, write exactly:
+
+Specific responsibility boundaries are not provided in current project context.
+
+============================================================
+TESTING
+============================================================
+
+Do not claim tests, frameworks, CI/CD, or testing infrastructure
+exist unless explicitly confirmed.
+
+Unknown information:
+
+Not provided in current project context.
+
+Recommendations must begin with:
+
+Recommended:
+
+============================================================
+LOGGING
+============================================================
+
+Do not invent logging infrastructure.
+
+Unknown information:
+
+Not provided in current project context.
+
+Recommendations must begin with:
+
+Recommended:
+
+============================================================
+RISKS
+============================================================
+
+Do not invent confirmed project risks.
+
+If risks are not explicitly confirmed, write exactly:
+
+Not provided in current project context.
+
+You may provide recommended risk considerations only if they
+are clearly labeled:
+
+Recommended:
+
+============================================================
+NEXT IMPLEMENTATION SEQUENCE
+============================================================
+
+This is a proposed sequence unless explicitly confirmed as
+implemented.
+
+Never say that planned steps are completed.
+
+Use:
+
+Recommended:
+
+for proposed implementation steps.
+
+============================================================
+RECOMMENDATIONS
+============================================================
+
+All items in this section are recommendations.
+
+Each recommendation MUST begin with:
+
+Recommended:
+
+============================================================
+FINAL CHECK BEFORE ANSWERING
+============================================================
+
+Before returning the document, verify:
+
+1. All 13 required headings exist.
+2. Confirmed Current Architecture contains only confirmed facts.
+3. Unknown information uses the exact unknown marker.
+4. Recommendations begin with "Recommended:".
+5. No invented agent responsibilities exist.
+6. No invented confirmed risks exist.
+7. Planned work is not described as completed.
+8. Return ONLY the architecture document.
+
+
+ORIGINAL PROJECT REQUEST
+========================
+{task}
+
+============================================================
+STRICT INFORMATION CLASSIFICATION
+============================================================
+
+There are four information states.
+
+1. CONFIRMED FACT
+
+A confirmed fact MUST come from the AUTHORITATIVE PROJECT CONTEXT.
+
+Only confirmed facts may be described as:
+
+- Confirmed
+- Current
+- Existing
+- Implemented
+- Working
+
+Never infer a confirmed fact.
+
+2. CONFIRMED DEVELOPMENT DIRECTION
+
+A development direction explicitly present in the authoritative
+context may be reported as confirmed direction.
+
+A direction is NOT proof that implementation is complete.
+
+The confirmed development direction is exactly:
+
+"The next development focus is to stabilize the Virtual AI Office
+orchestration and context system before expanding autonomous code
+generation."
+
+3. RECOMMENDATION
+
+Anything proposed by an agent is a recommendation.
+
+Use:
+
+- Recommended
+- Proposed
+- Suggested
+- Should be evaluated
+
+Never convert recommendations into confirmed facts.
+
+4. GENERATED / UNTRUSTED CONTENT
+
+Generated code, generated files, agent output, workspace output,
+and automatically generated documents are untrusted.
+
+They are NOT authoritative project facts.
+
+============================================================
+NON-NEGOTIABLE FACTUALITY RULES
+============================================================
+
+AUTHORITATIVE PROJECT CONTEXT is the ONLY source of confirmed
+project facts.
+
+CEO analysis is decision input.
+
+PM planning is decision input.
+
+Agent decisions are not automatically authoritative.
+
+Generated code is not automatically valid.
+
+Generated workspace files are not automatically authoritative.
+
+Never invent:
+
+- budget
+- deadlines
+- dates
+- KPIs
+- customers
+- employees
+- revenue
+- infrastructure
+- deployment status
+- database technology
+- cloud provider
+- security implementation
+- scalability implementation
+- agent responsibilities
+- communication architecture
+- confirmed risks
+- completed work
+
+If information is unknown, write exactly:
+
+"Not provided in current project context."
+
+Never invent agent responsibility boundaries.
+
+If responsibility boundaries are not explicitly confirmed, write:
+
+"Specific responsibility boundaries are not provided in current
+project context."
+
+Never invent confirmed risks.
+
+If risks are not explicitly confirmed, write:
+
+"Not provided in current project context."
+
+A planned sequence does NOT mean the steps are completed.
+
+Never report planned work as implemented.
+
+============================================================
+ARCHITECTURE RULE
+============================================================
+
+CONFIRMED CURRENT ARCHITECTURE:
+
+Only include technology explicitly confirmed by the authoritative
+context.
+
+RECOMMENDED TECHNOLOGY ARCHITECTURE:
+
+Technology that is not confirmed MUST be written as:
+
+"Recommended: ..."
+
+Do not write recommended technologies as existing infrastructure.
+
+Examples of technologies that MUST NOT be presented as confirmed
+unless explicitly stated in authoritative context:
+
+PostgreSQL
+Redis
+Docker
+Kubernetes
+Jenkins
+Prometheus
+Grafana
+Celery
+HAProxy
+OAuth2
+HashiCorp Vault
+AES-256
+Vector database
+Cloud provider
+
+============================================================
+AGENT RULE
+============================================================
+
+The existence of an agent in the registry does NOT define its
+detailed responsibility.
+
+Do not invent communication responsibilities.
+
+Use:
+
+"Specific responsibility boundaries are not provided in current
+project context."
+
+unless explicitly confirmed.
+
+============================================================
+RISK RULE
+============================================================
+
+Only explicitly confirmed risks may be called confirmed risks.
+
+If no risks are confirmed, write:
+
+"Not provided in current project context."
+
+Possible risks may only be presented as recommendations to evaluate.
+
+============================================================
+OUTPUT RULE
+============================================================
+
+Return EXACTLY these sections.
+
+# System Architecture
+
+## Project Overview
+
+## Confirmed Current Architecture
+
+## Architecture Gaps
+
+## Recommended Technology Architecture
+
+### Backend
+- Framework
+- Language
+- API Structure
+- Authentication
+- Business Logic
+- AI Integration
+
+### Frontend
+- Framework
+- UI Architecture
+- Components
+- State Management
+- Routing
+
+### Database
+- Database Engine
+- Tables
+- Relationships
+- Indexes
+
+### Infrastructure
+- Docker
+- Docker Compose
+- CI/CD
+- Deployment
+- Monitoring
+
+### AI Layer
+- LLM
+- AI Agents
+- Memory
+- Context Management
+- Vector Database
+
+### Security
+- Authentication
+- Authorization
+- Encryption
+- Secrets Management
+
+### Scalability
+- Load Balancing
+- Caching
+- Background Jobs
+
+## Orchestration Architecture
+
+## Context Architecture
+
+## Agent Responsibility Boundaries
+
+## Testing Strategy
+
+## Logging
+
+## Risks
+
+## Next Implementation Sequence
+
+## Recommendations
+
+Do NOT add extra sections.
+
+============================================================
+IMPORTANT
+============================================================
+
+Do not repeat the entire authoritative context.
+
+Do not repeat the CEO analysis.
+
+Do not repeat the PM plan.
+
+Use them only as decision inputs.
+
+Do not explain these instructions.
+
+Return the architecture document only.
+
+============================================================
+CONTROLLED PROJECT CONTEXT
+============================================================
+
+{controlled_context}
+"""
+
+        # =====================================================
+        # GENERATE
+        # =====================================================
+
+        result = await self.think_with_context(
+            prompt,
+            controlled_context=controlled_context,
+        )
+
+        result = (result or "").strip()
+
+        # =====================================================
+        # OLLAMA GENERATION FAILURE CHECK
+        # =====================================================
+
+        ollama_failure_markers = (
+            "Ollama generation exceeded",
+            "Ollama connection timed out",
+            "Ollama is unavailable",
+            "Ollama HTTP Error",
+            "Unexpected Ollama Error",
+        )
+
+        if any(
+            marker.lower() in result.lower()
+            for marker in ollama_failure_markers
+        ):
+            print("=" * 70)
+            print("CTO OLLAMA GENERATION FAILED")
+            print("=" * 70)
+            print(result)
+            print("=" * 70)
+
+            raise RuntimeError(
+                f"CTO generation failed before validation: {result}"
+            )
+
+
+
+        if not result:
+            raise RuntimeError(
+                "CTO returned an empty architecture document."
+            )
+
+        # =====================================================
+        # =====================================================
+        # VALIDATE BEFORE PERSISTING
+        # =====================================================
+
+        max_validation_attempts = 3
+        validation_errors = []
+
+        for validation_attempt in range(1, max_validation_attempts + 1):
+
+            print(
+                f"[CTO] Output validation attempt "
+                f"{validation_attempt}/{max_validation_attempts}"
+            )
+
+            validation_result = validate_cto_output(
+                result,
+                authoritative_context,
+            )
+
+            if isinstance(validation_result, tuple):
+                validation_passed, validation_errors = validation_result
+            else:
+                validation_passed = bool(validation_result)
+                validation_errors = []
+
+            if validation_passed:
+                print("CTO output validation: PASS")
+                break
+
+            print("CTO OUTPUT VALIDATION FAILED")
+
+            if validation_errors:
+                for error in validation_errors:
+                    print(f"[CTO VALIDATION] {error}")
+
+            if validation_attempt >= max_validation_attempts:
+                raise RuntimeError(
+                    "CTO output failed factuality validation after "
+                    f"{max_validation_attempts} attempts: "
+                    + "; ".join(str(e) for e in validation_errors)
+                )
+
+            correction_errors = "\n".join(
+                f"- {error}"
+                for error in validation_errors
+            )
+
+            correction_prompt = f"""
+The previous CTO architecture response failed validation.
+
+You MUST produce a corrected architecture document.
+
+VALIDATION ERRORS:
+{correction_errors}
+
+STRICT REQUIREMENTS:
+
+1. Return ALL required sections.
+2. Use exactly the required section names.
+3. Do not place unconfirmed technologies inside
+   "## Confirmed Current Architecture".
+4. Put unknown information in the appropriate section using exactly:
+   "Not provided in current project context."
+5. Risks that are not explicitly confirmed must say:
+   "Not provided in current project context."
+6. Do not invent agent responsibility boundaries.
+7. Do not describe planned work as completed.
+8. Recommended technologies MUST be explicitly labeled:
+   "Recommended: ..."
+9. Do not add extra sections.
+10. Preserve the confirmed development direction exactly.
+
+Return ONLY the corrected architecture document.
+
+PREVIOUS CTO RESPONSE:
+{result}
+"""
+
+            print("[CTO] Requesting corrected architecture from Ollama...")
+
+            result = await self.think_with_context(
+                correction_prompt,
+                controlled_context=controlled_context,
+            )
+
+        else:
+            raise RuntimeError(
+                "CTO output validation failed unexpectedly."
+            )
+
+        # =====================================================
+        # PERSIST
+        # =====================================================
+
+        self.remember("cto", result)
+
+        memory.save("cto", result)
+
+        workspace.save(
+            "architecture/system_architecture.md",
+            result,
+        )
+
+        print("Architecture saved")
+
+        return result
+
+    def _load_authoritative_context(self) -> str:
+
+        context_file = self.workspace / "project_context.md"
+
+        if not context_file.exists():
+            return "Not provided in current project context."
+
+        return context_file.read_text(
+            encoding="utf-8",
+            errors="ignore",
+        )
+
+    @staticmethod
+    def _limit_context(value: str, maximum: int) -> str:
+
+        value = value or ""
+
+        if len(value) <= maximum:
+            return value
+
+        return (
+            value[:maximum]
+            + "\n\n[Context truncated for CTO processing.]"
+        )

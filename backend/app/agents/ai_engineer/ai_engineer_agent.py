@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class AIEngineerAgent(BaseAgent):
 
     async def design_ai_system(self, task: str):
 
-        print("🤖 AI Engineer Started")
+        print("ðŸ¤– AI Engineer Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -113,6 +113,7 @@ Return Markdown.
             result
         )
 
-        print("💾 AI engineering saved")
+        print("ðŸ’¾ AI engineering saved")
 
         return result
+

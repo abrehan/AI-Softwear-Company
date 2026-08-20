@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 
 
 class HRAgent(BaseAgent):
@@ -11,7 +11,7 @@ class HRAgent(BaseAgent):
         self.model = "llama3.2:1b"
 
     async def run(self, task):
-        print("✅ hr_plan() called")
+        print("âœ… hr_plan() called")
 
         prompt = f"""
 Human resource planning.
@@ -29,3 +29,4 @@ Include:
         result = await self.think_with_context(task)
         self.remember(task, result)
         return result
+

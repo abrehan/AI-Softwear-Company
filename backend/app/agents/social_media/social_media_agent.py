@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class SocialMediaAgent(BaseAgent):
 
     async def social_campaign(self, task: str):
 
-        print("📱 Social Media Manager Started")
+        print("ðŸ“± Social Media Manager Started")
 
         ceo_summary = memory.get("ceo") or ""
         business_analysis = memory.get("business") or ""
@@ -110,6 +110,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Social media strategy saved")
+        print("ðŸ’¾ Social media strategy saved")
 
         return result
+

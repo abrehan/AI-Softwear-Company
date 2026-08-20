@@ -1,16 +1,22 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.database import Base, engine
+from app.database import Base, engine
 
 # Import models so SQLAlchemy knows about them
-from backend.app.models.user import User
-from backend.app.models.project import Project
+from app.models.user import User
+from app.models.project import Project
 
 # Working API routers
-from backend.app.api.routes.auth import router as auth_router
-from backend.app.api.routes.users import router as users_router
-from backend.app.api.routes.projects import router as projects_router
+from app.api.routes.auth import router as auth_router
+from app.api.routes.users import router as users_router
+from app.api.routes.projects import router as projects_router
+from app.api.routes.departments import router as departments_router
+from app.api.routes.agents import router as agents_router
+from app.api.routes.registry import router as registry_router
+from app.api.routes.ai import router as ai_router
+from app.models.department import Department
+from app.models.agent import Agent
 
 app = FastAPI(
     title="AI Software Company",
@@ -50,6 +56,10 @@ Base.metadata.create_all(bind=engine)
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(projects_router)
+app.include_router(departments_router)
+app.include_router(agents_router)
+app.include_router(registry_router)
+app.include_router(ai_router)
 
 
 # --------------------------------------------------
@@ -74,3 +84,20 @@ def health():
     return {
         "status": "healthy",
     }
+
+
+
+
+
+
+# --------------------------------------------------
+# API HEALTH
+# --------------------------------------------------
+
+@app.get("/api/health")
+def api_health():
+    return {
+        "status": "healthy",
+    }
+
+

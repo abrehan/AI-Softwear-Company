@@ -1,4 +1,4 @@
-from app.workflow.workflow_engine import WorkflowEngine
+﻿from app.workflow.workflow_engine import WorkflowEngine
 
 
 class Company:
@@ -9,3 +9,4 @@ class Company:
     async def execute_project(self, task: str):
 
         return await self.engine.execute(task)
+

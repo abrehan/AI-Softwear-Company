@@ -1,0 +1,190 @@
+﻿from __future__ import annotations
+
+import re
+from pathlib import Path
+
+
+class CTOOutputValidator:
+
+    REQUIRED_SECTIONS = [
+        "# System Architecture",
+        "## Project Overview",
+        "## Confirmed Current Architecture",
+        "## Architecture Gaps",
+        "## Recommended Technology Architecture",
+        "## Orchestration Architecture",
+        "## Context Architecture",
+        "## Agent Responsibility Boundaries",
+        "## Testing Strategy",
+        "## Logging",
+        "## Risks",
+        "## Next Implementation Sequence",
+        "## Recommendations",
+    ]
+
+    FORBIDDEN_CONFIRMED_TECHNOLOGIES = [
+        "postgresql",
+        "postgres",
+        "redis",
+        "docker",
+        "docker compose",
+        "kubernetes",
+        "jenkins",
+        "prometheus",
+        "grafana",
+        "haproxy",
+        "celery",
+        "oauth2",
+        "oauth 2.0",
+        "hashicorp vault",
+        "vault",
+        "aes-256",
+        "message broker",
+        "api gateway",
+        "microservices",
+    ]
+
+    CONFIRMED_MARKERS = [
+        "confirmed",
+        "current",
+        "existing",
+        "implemented",
+        "working",
+    ]
+
+    RECOMMENDATION_MARKERS = [
+        "recommended",
+        "proposed",
+        "suggested",
+        "should be evaluated",
+        "recommended:",
+    ]
+
+    UNKNOWN_MARKER = "Not provided in current project context."
+
+    def __init__(self, authoritative_context: str):
+        self.authoritative_context = authoritative_context.lower()
+
+    def validate(self, output: str) -> tuple[bool, list[str]]:
+
+        errors: list[str] = []
+
+        if not output or not output.strip():
+            errors.append("CTO output is empty.")
+            return False, errors
+
+        for section in self.REQUIRED_SECTIONS:
+            if section.lower() not in output.lower():
+                errors.append(
+                    f"Missing required section: {section}"
+                )
+
+        confirmed_section = self._extract_section(
+            output,
+            "## Confirmed Current Architecture",
+            "## Architecture Gaps",
+        )
+
+        if confirmed_section:
+            for technology in self.FORBIDDEN_CONFIRMED_TECHNOLOGIES:
+                if technology in confirmed_section.lower():
+                    if technology not in self.authoritative_context:
+                        errors.append(
+                            "Unconfirmed technology appears in "
+                            f"Confirmed Current Architecture: {technology}"
+                        )
+
+        gaps_section = self._extract_section(
+            output,
+            "## Architecture Gaps",
+            "## Recommended Technology Architecture",
+        )
+
+        if gaps_section:
+            if self.UNKNOWN_MARKER.lower() not in gaps_section.lower():
+                errors.append(
+                    "Architecture Gaps should explicitly identify "
+                    "unknown information."
+                )
+
+        risks_section = self._extract_section(
+            output,
+            "## Risks",
+            "## Next Implementation Sequence",
+        )
+
+        if risks_section:
+            if "not provided in current project context" not in risks_section.lower():
+                errors.append(
+                    "Risks section contains risks without explicitly "
+                    "establishing them as unconfirmed."
+                )
+
+        responsibility_section = self._extract_section(
+            output,
+            "## Agent Responsibility Boundaries",
+            "## Testing Strategy",
+        )
+
+        if responsibility_section:
+            if (
+                "specific responsibility boundaries are not provided"
+                not in responsibility_section.lower()
+                and "recommended" not in responsibility_section.lower()
+            ):
+                errors.append(
+                    "Agent responsibility boundaries appear to be "
+                    "invented or insufficiently classified."
+                )
+
+        sequence_section = self._extract_section(
+            output,
+            "## Next Implementation Sequence",
+            "## Recommendations",
+        )
+
+        if sequence_section:
+            if "completed" in sequence_section.lower():
+                errors.append(
+                    "Development sequence must not be described as completed."
+                )
+
+        return len(errors) == 0, errors
+
+    def _extract_section(
+        self,
+        text: str,
+        start_heading: str,
+        end_heading: str | None = None,
+    ) -> str:
+
+        lower = text.lower()
+        start = lower.find(start_heading.lower())
+
+        if start == -1:
+            return ""
+
+        start += len(start_heading)
+
+        if end_heading:
+            end = lower.find(
+                end_heading.lower(),
+                start,
+            )
+
+            if end != -1:
+                return text[start:end]
+
+        return text[start:]
+
+
+def validate_cto_output(
+    output: str,
+    authoritative_context: str,
+) -> tuple[bool, list[str]]:
+
+    validator = CTOOutputValidator(
+        authoritative_context
+    )
+
+    return validator.validate(output)

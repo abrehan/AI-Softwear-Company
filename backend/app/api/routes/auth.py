@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app.core.security import (
+from app.database import get_db
+from app.core.security import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
     authenticate_user,
     create_access_token,
@@ -54,3 +54,5 @@ def login_for_access_token(
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+

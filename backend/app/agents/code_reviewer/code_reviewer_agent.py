@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class CodeReviewerAgent(BaseAgent):
 
     async def review_code(self, task: str):
 
-        print("🔍 Code Reviewer Started")
+        print("ðŸ” Code Reviewer Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -156,6 +156,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Code review saved")
+        print("ðŸ’¾ Code review saved")
 
         return result
+

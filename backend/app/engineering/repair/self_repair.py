@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 import json
@@ -12,24 +12,24 @@ from typing import Any
 
 class SelfRepairEngine:
     """
-    PHASE 7 — SELF-REPAIR ENGINE
+    PHASE 7 â€” SELF-REPAIR ENGINE
 
     Workflow:
 
         QA
-         ↓
+         â†“
         Detect failure
-         ↓
+         â†“
         Collect diagnostics
-         ↓
+         â†“
         Create backup
-         ↓
+         â†“
         Generate repair plan
-         ↓
+         â†“
         Apply only approved/local repair
-         ↓
+         â†“
         Run QA again
-         ↓
+         â†“
         Keep fix OR rollback
 
     The engine is intentionally conservative.
@@ -466,7 +466,7 @@ class SelfRepairEngine:
         print()
         print("=" * 60)
         print(
-            "🛠️ PHASE 7 — SELF-REPAIR ENGINE"
+            "ðŸ› ï¸ PHASE 7 â€” SELF-REPAIR ENGINE"
         )
         print("=" * 60)
 
@@ -479,7 +479,7 @@ class SelfRepairEngine:
 
             print()
             print(
-                f"🔄 QA ATTEMPT "
+                f"ðŸ”„ QA ATTEMPT "
                 f"{attempt}/{self.max_attempts}"
             )
 
@@ -501,7 +501,7 @@ class SelfRepairEngine:
 
                 print()
                 print(
-                    "🎉 QA PASSED — "
+                    "ðŸŽ‰ QA PASSED â€” "
                     "NO REPAIR REQUIRED"
                 )
 
@@ -523,7 +523,7 @@ class SelfRepairEngine:
 
             print()
             print(
-                "❌ QA FAILURE DETECTED"
+                "âŒ QA FAILURE DETECTED"
             )
 
             analysis = (
@@ -533,7 +533,7 @@ class SelfRepairEngine:
             )
 
             print(
-                f"🔎 Failures found: "
+                f"ðŸ”Ž Failures found: "
                 f"{analysis['failure_count']}"
             )
 
@@ -555,13 +555,13 @@ class SelfRepairEngine:
             )
 
             print(
-                "📋 Repair plan generated."
+                "ðŸ“‹ Repair plan generated."
             )
 
             if not apply_repairs:
 
                 print(
-                    "🛡️ Safe mode: "
+                    "ðŸ›¡ï¸ Safe mode: "
                     "no source changes applied."
                 )
 
@@ -593,7 +593,7 @@ class SelfRepairEngine:
                 }
 
             print(
-                "💾 Backup created:"
+                "ðŸ’¾ Backup created:"
             )
 
             print(
@@ -601,12 +601,12 @@ class SelfRepairEngine:
             )
 
             print(
-                "⚠️ No automatic code mutation "
+                "âš ï¸ No automatic code mutation "
                 "is configured yet."
             )
 
             print(
-                "ℹ️ Add a repair function to "
+                "â„¹ï¸ Add a repair function to "
                 "apply_repairs=True mode."
             )
 
@@ -669,3 +669,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+

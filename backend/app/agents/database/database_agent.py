@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class DatabaseAgent(BaseAgent):
 
     async def design_database(self, task: str):
 
-        print("🗄️ Database Agent Started")
+        print("ðŸ—„ï¸ Database Agent Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -114,6 +114,7 @@ Return the result in Markdown.
             result
         )
 
-        print("💾 Database design saved")
+        print("ðŸ’¾ Database design saved")
 
         return result
+

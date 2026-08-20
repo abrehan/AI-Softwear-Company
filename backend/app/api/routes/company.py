@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+﻿from fastapi import APIRouter
 from pydantic import BaseModel
 from app.orchestrator.company import Company
 
@@ -14,3 +14,4 @@ class ProjectRequest(BaseModel):
 @router.post("/build")
 async def build_project(request: ProjectRequest):
     return await company.execute_project(request.task)
+

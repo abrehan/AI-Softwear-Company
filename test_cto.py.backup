@@ -1,0 +1,46 @@
+import asyncio
+
+from app.agents.cto.cto_agent import CTOAgent
+
+
+async def main():
+    print("=" * 70)
+    print("DIRECT CTO TEST")
+    print("=" * 70)
+
+    agent = CTOAgent()
+
+    print("[CTO] Model:", agent.model)
+    print("[CTO] Sending test task...")
+
+    task = """
+Design a simple architecture for the AI Software Company project.
+
+Requirements:
+- FastAPI backend
+- React frontend
+- Ollama local AI
+- PostgreSQL
+- REST API
+- Docker-ready
+
+Return only:
+1. Architecture
+2. Components
+3. Technology stack
+4. Data flow
+5. Security
+6. Next step
+"""
+
+    result = await agent.run(task)
+
+    print("\n" + "=" * 70)
+    print("CTO RESPONSE")
+    print("=" * 70)
+    print(result)
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

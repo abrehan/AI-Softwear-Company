@@ -1,0 +1,244 @@
+﻿from backend.app.agents.base_agent import BaseAgent
+from backend.app.memory.project_memory import memory
+from backend.app.workspace.workspace import workspace
+from backend.app.agents.cto.cto_output_validator import validate_cto_output
+from backend.app.context.context_manager import context_manager
+
+
+class CTOAgent(BaseAgent):
+
+    def __init__(self):
+
+        super().__init__(
+            "CTO Agent",
+            "Chief Technology Officer",
+            agent_key="cto",
+        )
+
+        self.model = "llama3.1:8b"
+
+    async def run(self, task: str):
+
+        return await self.design_architecture(task)
+
+    async def design_architecture(self, task: str):
+
+        print("CTO Agent Started")
+
+        authoritative_context = (
+            context_manager.load_authoritative_context()
+        )
+
+        ceo_summary = memory.get("ceo") or ""
+        pm_plan = memory.get("pm") or ""
+
+        controlled_context = f"""
+===================================================
+AUTHORITATIVE PROJECT CONTEXT
+===================================================
+
+{authoritative_context}
+
+===================================================
+CEO DECISION OUTPUT
+===================================================
+
+{ceo_summary}
+
+IMPORTANT:
+CEO recommendations are NOT authoritative project facts.
+
+===================================================
+PROJECT MANAGER DECISION OUTPUT
+===================================================
+
+{pm_plan}
+
+IMPORTANT:
+Project Manager recommendations are NOT authoritative
+project facts.
+"""
+
+        prompt = f"""
+You are the Chief Technology Officer of the AI Software Company.
+
+Your responsibility is to define technical architecture and
+implementation priorities.
+
+ORIGINAL PROJECT REQUEST:
+
+{task}
+
+===================================================
+STRICT FACTUALITY POLICY
+===================================================
+
+1. project_context.md is the ONLY authoritative project source.
+
+2. CEO and PM outputs are decision inputs only.
+
+3. Never turn recommendations into confirmed facts.
+
+4. Never invent:
+   - budget
+   - deadlines
+   - dates
+   - KPIs
+   - customers
+   - employees
+   - revenue
+   - complexity
+   - completed work
+   - infrastructure
+   - technical decisions
+
+5. If information is not explicitly confirmed, write:
+
+"Not provided in current project context."
+
+6. Recommendations MUST be clearly labeled as recommendations.
+
+7. Do not claim generated code is valid merely because an agent
+   generated it.
+
+8. Do not modify source code.
+
+9. Do not use unrelated workspace files.
+
+10. The confirmed development direction is:
+
+"The next development focus is to stabilize the Virtual AI Office
+orchestration and context system before expanding autonomous code
+generation."
+
+===================================================
+REQUIRED OUTPUT
+===================================================
+
+Return ONLY these sections:
+
+# System Architecture
+
+## Project Overview
+
+## Confirmed Current Architecture
+
+## Recommended Technology Architecture
+
+### Backend
+- Framework
+- Language
+- API Structure
+- Authentication
+- Business Logic
+- AI Integration
+
+### Frontend
+- Framework
+- UI Architecture
+- Components
+- State Management
+- Routing
+
+### Database
+- Database Engine
+- Tables
+- Relationships
+- Indexes
+
+### Infrastructure
+- Docker
+- Docker Compose
+- CI/CD
+- Deployment
+- Monitoring
+
+### AI Layer
+- LLM
+- AI Agents
+- Memory
+- Context Management
+- Vector Database
+
+### Security
+- Authentication
+- Authorization
+- Encryption
+- Secrets Management
+
+### Scalability
+- Load Balancing
+- Caching
+- Background Jobs
+
+## Orchestration Architecture
+
+## Context Architecture
+
+## Agent Responsibility Boundaries
+
+## Testing Strategy
+
+## Logging
+
+## Risks
+
+## Next Implementation Sequence
+
+## Recommendations
+
+Do not add other sections.
+"""
+
+        result = await self.think_with_context(
+            prompt,
+            controlled_context=controlled_context,
+        )
+
+        # =====================================================
+        # CTO OUTPUT VALIDATION
+        # =====================================================
+
+        valid, validation_errors = validate_cto_output(
+            result,
+            authoritative_context,
+        )
+
+        if not valid:
+
+            print("CTO OUTPUT VALIDATION FAILED")
+
+            for error in validation_errors:
+                print(f"[CTO VALIDATOR] {error}")
+
+            raise RuntimeError(
+                "CTO output failed factuality validation:\n"
+                + "\n".join(validation_errors)
+            )
+
+        print("CTO output validation: PASS")
+
+        self.remember(
+            "cto",
+            result
+        )
+
+        memory.save(
+            "cto",
+            result
+        )
+
+        workspace.save(
+            "architecture/system_architecture.md",
+            result,
+        )
+
+        print("Architecture saved")
+
+        return result
+
+    def _load_authoritative_context(self):
+
+        return context_manager.load_authoritative_context()
+
+

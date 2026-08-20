@@ -6,8 +6,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app.models.user import User
+from app.database import get_db
+from app.models.user import User
 
 
 SECRET_KEY = "change-this-development-secret-key"
@@ -148,3 +148,5 @@ def get_current_user(
         raise credentials_exception
 
     return user
+
+

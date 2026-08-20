@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class DevSecOpsAgent(BaseAgent):
 
     async def devsecops_strategy(self, task: str):
 
-        print("🛡️ DevSecOps Agent Started")
+        print("ðŸ›¡ï¸ DevSecOps Agent Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -137,6 +137,7 @@ Return the result in Markdown.
             result
         )
 
-        print("💾 DevSecOps strategy saved")
+        print("ðŸ’¾ DevSecOps strategy saved")
 
         return result
+

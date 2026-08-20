@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class SalesAgent(BaseAgent):
 
     async def sales_strategy(self, task: str):
 
-        print("💼 Sales Manager Started")
+        print("ðŸ’¼ Sales Manager Started")
 
         ceo_summary = memory.get("ceo") or ""
         business_analysis = memory.get("business") or ""
@@ -125,6 +125,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Sales strategy saved")
+        print("ðŸ’¾ Sales strategy saved")
 
         return result
+

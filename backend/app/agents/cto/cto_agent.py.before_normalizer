@@ -1,0 +1,417 @@
+﻿from app.agents.base_agent import BaseAgent
+from app.memory.project_memory import memory
+from app.workspace.workspace import workspace
+from app.agents.cto.cto_output_validator import validate_cto_output
+
+
+class CTOAgent(BaseAgent):
+
+    def __init__(self):
+        super().__init__(
+            "CTO Agent",
+            "Chief Technology Officer",
+            agent_key="cto",
+        )
+
+        # Explicit CTO model.
+        self.model = "phi3.5:3.8b"
+
+    async def run(self, task: str):
+        return await self.design_architecture(task)
+
+    async def design_architecture(self, task: str):
+
+        print("CTO Agent Started")
+
+        # =====================================================
+        # AUTHORITATIVE CONTEXT
+        # =====================================================
+
+        authoritative_context = self._load_authoritative_context()
+
+        if not authoritative_context.strip():
+            authoritative_context = (
+                "Not provided in current project context."
+            )
+
+        # =====================================================
+        # DECISION INPUTS
+        # =====================================================
+
+        ceo_summary = memory.get("ceo") or (
+            "Not provided in current project context."
+        )
+
+        pm_plan = memory.get("pm") or (
+            "Not provided in current project context."
+        )
+
+        # Prevent unnecessarily huge prompts.
+        authoritative_context = self._limit_context(
+    authoritative_context,
+    700,
+)
+
+        ceo_summary = self._limit_context(
+    ceo_summary,
+    400,
+)
+
+        pm_plan = self._limit_context(
+    pm_plan,
+    500,
+)
+
+        task = self._limit_context(
+    task or "",
+    400,
+)
+
+        print(
+            "[CTO] Context sizes:",
+            f"authoritative={len(authoritative_context):,}",
+            f"ceo={len(ceo_summary):,}",
+            f"pm={len(pm_plan):,}",
+            f"task={len(task):,}",
+        )
+
+        # =====================================================
+        # CONTROLLED DECISION CONTEXT
+        # =====================================================
+
+        controlled_context = f"""
+AUTHORITATIVE PROJECT CONTEXT:
+{authoritative_context}
+
+CEO INPUT:
+{ceo_summary}
+
+PM INPUT:
+{pm_plan}
+
+TASK:
+{task}
+"""
+
+        # =====================================================
+        # CTO PROMPT
+        # =====================================================
+
+        prompt = f"""
+You are CTO Agent.
+
+Return ONLY a complete architecture document.
+
+MANDATORY:
+You MUST output every heading below, exactly as written, exactly once,
+and in exactly this order.
+
+# System Architecture
+
+## Project Overview
+Write 1-3 concise sentences.
+
+## Confirmed Current Architecture
+Only confirmed project facts.
+If unknown:
+Not provided in current project context.
+
+## Architecture Gaps
+Include:
+Not provided in current project context.
+
+## Recommended Technology Architecture
+Only recommendations. Prefix proposed technologies with:
+Recommended:
+
+### Backend
+- Framework
+- Language
+- API Structure
+- Authentication
+- Business Logic
+- AI Integration
+
+### Frontend
+- Framework
+- UI Architecture
+- State Management
+- API Integration
+
+### Data
+- Database
+- Persistence
+- Caching
+- File Storage
+
+## Orchestration Architecture
+Use confirmed facts only. Otherwise:
+Not provided in current project context.
+
+## Context Architecture
+Use confirmed facts only. Otherwise:
+Not provided in current project context.
+
+## Agent Responsibility Boundaries
+Do not invent responsibilities.
+If unknown:
+Proposed responsibility: Not provided in current project context.
+
+## Testing Strategy
+Use confirmed facts only. Otherwise:
+Not provided in current project context.
+
+## Logging
+Use confirmed facts only. Otherwise:
+Not provided in current project context.
+
+## Risks
+Use confirmed risks only.
+If unknown:
+Not provided in current project context.
+Proposed risks must begin:
+Recommended risk to evaluate:
+
+## Next Implementation Sequence
+Provide a concise PLAN only.
+Never say the planned work is completed.
+
+## Recommendations
+Provide concise recommendations.
+Do not claim recommendations are already implemented.
+
+STRICT RULES:
+- Do not add any other headings.
+- Do not omit any heading.
+- Do not rename headings.
+- Do not explain these rules.
+- Do not use code fences.
+- Do not invent project facts.
+- PostgreSQL, Redis, Docker, Kubernetes, OAuth, microservices, message brokers,
+  API gateways and similar technologies are NOT confirmed unless explicitly
+  present in authoritative project context.
+
+AUTHORITATIVE PROJECT CONTEXT:
+{authoritative_context}
+
+CEO INPUT:
+{ceo_summary}
+
+PM INPUT:
+{pm_plan}
+
+PROJECT REQUEST:
+{task}
+"""        # GENERATE
+        # =====================================================
+
+        result = await self.think_with_context(
+            prompt,
+            controlled_context="",
+        )
+
+        result = (result or "").strip()
+
+        # =====================================================
+        # OLLAMA GENERATION FAILURE CHECK
+        # =====================================================
+
+        ollama_failure_markers = (
+            "Ollama generation exceeded",
+            "Ollama connection timed out",
+            "Ollama is unavailable",
+            "Ollama HTTP Error",
+            "Unexpected Ollama Error",
+        )
+
+        if any(
+            marker.lower() in result.lower()
+            for marker in ollama_failure_markers
+        ):
+            print("=" * 70)
+            print("CTO OLLAMA GENERATION FAILED")
+            print("=" * 70)
+            print(result)
+            print("=" * 70)
+
+            raise RuntimeError(
+                f"CTO generation failed before validation: {result}"
+            )
+
+
+
+        if not result:
+            raise RuntimeError(
+                "CTO returned an empty architecture document."
+            )
+
+        # =====================================================
+        # =====================================================
+        # VALIDATE BEFORE PERSISTING
+        # =====================================================
+
+        max_validation_attempts = 3
+        validation_errors = []
+
+        for validation_attempt in range(1, max_validation_attempts + 1):
+
+            print(
+                f"[CTO] Output validation attempt "
+                f"{validation_attempt}/{max_validation_attempts}"
+            )
+
+            validation_result = validate_cto_output(
+                result,
+                authoritative_context,
+            )
+
+            if isinstance(validation_result, tuple):
+                validation_passed, validation_errors = validation_result
+            else:
+                validation_passed = bool(validation_result)
+                validation_errors = []
+
+            if validation_passed:
+                print("CTO output validation: PASS")
+                break
+
+            print("CTO OUTPUT VALIDATION FAILED")
+
+            if validation_errors:
+                for error in validation_errors:
+                    print(f"[CTO VALIDATION] {error}")
+
+            if validation_attempt >= max_validation_attempts:
+                raise RuntimeError(
+                    "CTO output failed factuality validation after "
+                    f"{max_validation_attempts} attempts: "
+                    + "; ".join(str(e) for e in validation_errors)
+                )
+
+            correction_errors = "\n".join(
+                f"- {error}"
+                for error in validation_errors
+            )
+
+            correction_prompt = f"""
+The previous CTO architecture response failed validation.
+
+You MUST produce a corrected architecture document.
+
+VALIDATION ERRORS:
+{correction_errors}
+
+STRICT REQUIREMENTS:
+
+1. Return ALL required sections.
+2. Use exactly the required section names.
+3. Do not place unconfirmed technologies inside
+   "## Confirmed Current Architecture".
+4. Put unknown information in the appropriate section using exactly:
+   "Not provided in current project context."
+5. Risks that are not explicitly confirmed must say:
+   "Not provided in current project context."
+6. Do not invent agent responsibility boundaries.
+7. Do not describe planned work as completed.
+8. Recommended technologies MUST be explicitly labeled:
+   "Recommended: ..."
+9. Do not add extra sections.
+10. Preserve the confirmed development direction exactly.
+
+Return ONLY the corrected architecture document.
+
+PREVIOUS CTO RESPONSE:
+{result}
+"""
+
+            print("[CTO] Requesting corrected architecture from Ollama...")
+
+            result = await self.think_with_context(
+                correction_prompt,
+                controlled_context=controlled_context,
+            )
+
+        else:
+            raise RuntimeError(
+                "CTO output validation failed unexpectedly."
+            )
+
+        # =====================================================
+        # PERSIST
+        # =====================================================
+
+        self.remember("cto", result)
+
+        memory.save("cto", result)
+
+        # =====================================================
+        # PERSIST ARCHITECTURE
+        # =====================================================
+
+        from pathlib import Path
+
+        project_root = Path(__file__).resolve().parents[4]
+
+        architecture_dir = (
+            project_root
+            / "workspace"
+            / "architecture"
+        )
+
+        architecture_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        architecture_file = (
+            architecture_dir
+            / "system_architecture.md"
+        )
+
+        architecture_file.write_text(
+            result,
+            encoding="utf-8",
+        )
+
+        print(
+            f"Architecture saved: {architecture_file}"
+        )
+        return result
+
+    def _load_authoritative_context(self) -> str:
+
+        context_file = self.workspace / "project_context.md"
+
+        if not context_file.exists():
+            return "Not provided in current project context."
+
+        return context_file.read_text(
+            encoding="utf-8",
+            errors="ignore",
+        )
+
+    @staticmethod
+    def _limit_context(value: str, maximum: int) -> str:
+
+        value = value or ""
+
+        if len(value) <= maximum:
+            return value
+
+        return (
+            value[:maximum]
+            + "\n\n[Context truncated for CTO processing.]"
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,14 +1,14 @@
 ﻿from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app.models.project import Project
-from backend.app.models.user import User
-from backend.app.schemas.project import (
+from app.database import get_db
+from app.models.project import Project
+from app.models.user import User
+from app.schemas.project import (
     ProjectCreate,
     ProjectRead,
 )
-from backend.app.core.security import get_current_user
+from app.core.security import get_current_user
 
 
 router = APIRouter(
@@ -78,3 +78,5 @@ def get_project(
         )
 
     return project
+
+

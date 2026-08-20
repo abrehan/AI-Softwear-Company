@@ -1,10 +1,10 @@
 ﻿from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app.models.user import User
-from backend.app.schemas.user import UserCreate, UserRead
-from backend.app.core.security import (
+from app.database import get_db
+from app.models.user import User
+from app.schemas.user import UserCreate, UserRead
+from app.core.security import (
     get_current_user,
     hash_password,
 )
@@ -94,3 +94,5 @@ def read_users_me(
 ):
 
     return current_user
+
+

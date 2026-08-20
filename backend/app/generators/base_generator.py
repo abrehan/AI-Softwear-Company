@@ -1,4 +1,4 @@
-from app.workspace.workspace import workspace
+﻿from app.workspace.workspace import workspace
 
 
 class BaseGenerator:
@@ -11,3 +11,4 @@ class BaseGenerator:
             "path": path,
             "content": content
         }
+

@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class PromptEngineerAgent(BaseAgent):
 
     async def design_prompts(self, task: str):
 
-        print("📝 Prompt Engineer Started")
+        print("ðŸ“ Prompt Engineer Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -119,6 +119,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Prompt engineering saved")
+        print("ðŸ’¾ Prompt engineering saved")
 
         return result
+

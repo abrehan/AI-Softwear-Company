@@ -1,4 +1,4 @@
-from app.managers.agent_manager import AgentManager
+﻿from app.managers.agent_manager import AgentManager
 
 
 class WorkflowManager:
@@ -26,3 +26,4 @@ class WorkflowManager:
         )
 
         return results
+

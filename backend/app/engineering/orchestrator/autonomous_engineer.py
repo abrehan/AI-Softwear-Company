@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 import json
@@ -10,7 +10,7 @@ from typing import Any
 
 class AutonomousEngineer:
     """
-    PHASE 8 — AUTONOMOUS ENGINEERING ORCHESTRATOR
+    PHASE 8 â€” AUTONOMOUS ENGINEERING ORCHESTRATOR
 
     Coordinates:
 
@@ -405,7 +405,7 @@ class AutonomousEngineer:
         print()
         print("=" * 60)
         print(
-            "🤖 PHASE 8 — AUTONOMOUS ENGINEER"
+            "ðŸ¤– PHASE 8 â€” AUTONOMOUS ENGINEER"
         )
         print("=" * 60)
 
@@ -423,12 +423,12 @@ class AutonomousEngineer:
         }
 
         # -----------------------------------------------------
-        # Step 1 — Validation
+        # Step 1 â€” Validation
         # -----------------------------------------------------
 
         print()
         print(
-            "🔎 Step 1 — Project validation"
+            "ðŸ”Ž Step 1 â€” Project validation"
         )
 
         validation = (
@@ -448,7 +448,7 @@ class AutonomousEngineer:
         ):
 
             print(
-                "❌ Project validation failed."
+                "âŒ Project validation failed."
             )
 
             report["stage"] = (
@@ -460,11 +460,11 @@ class AutonomousEngineer:
             return report
 
         print(
-            "✅ Project validation passed."
+            "âœ… Project validation passed."
         )
 
         # -----------------------------------------------------
-        # Step 2 — QA
+        # Step 2 â€” QA
         # -----------------------------------------------------
 
         for attempt in range(
@@ -474,7 +474,7 @@ class AutonomousEngineer:
 
             print()
             print(
-                f"🧪 Step 2 — QA attempt "
+                f"ðŸ§ª Step 2 â€” QA attempt "
                 f"{attempt}/"
                 f"{self.max_repair_attempts}"
             )
@@ -496,7 +496,7 @@ class AutonomousEngineer:
 
                 print()
                 print(
-                    "🎉 ALL ENGINEERING CHECKS PASSED"
+                    "ðŸŽ‰ ALL ENGINEERING CHECKS PASSED"
                 )
 
                 report["success"] = True
@@ -519,18 +519,18 @@ class AutonomousEngineer:
 
                 print()
                 print(
-                    f"📄 Report: {report_path}"
+                    f"ðŸ“„ Report: {report_path}"
                 )
 
                 return report
 
             # -------------------------------------------------
-            # Step 3 — Analyze
+            # Step 3 â€” Analyze
             # -------------------------------------------------
 
             print()
             print(
-                "🔬 Step 3 — Failure analysis"
+                "ðŸ”¬ Step 3 â€” Failure analysis"
             )
 
             analysis = (
@@ -548,12 +548,12 @@ class AutonomousEngineer:
             )
 
             print(
-                f"🔎 Failures: "
+                f"ðŸ”Ž Failures: "
                 f"{analysis['failure_count']}"
             )
 
             # -------------------------------------------------
-            # Step 4 — Repair plan
+            # Step 4 â€” Repair plan
             # -------------------------------------------------
 
             repair_plan = (
@@ -571,7 +571,7 @@ class AutonomousEngineer:
             )
 
             print(
-                "📋 Repair plan created."
+                "ðŸ“‹ Repair plan created."
             )
 
             # -------------------------------------------------
@@ -581,7 +581,7 @@ class AutonomousEngineer:
             if not auto_repair:
 
                 print(
-                    "🛡️ SAFE MODE — "
+                    "ðŸ›¡ï¸ SAFE MODE â€” "
                     "No source files modified."
                 )
 
@@ -602,12 +602,12 @@ class AutonomousEngineer:
                 return report
 
             # -------------------------------------------------
-            # Step 5 — Backup
+            # Step 5 â€” Backup
             # -------------------------------------------------
 
             print()
             print(
-                "💾 Step 5 — Creating backup"
+                "ðŸ’¾ Step 5 â€” Creating backup"
             )
 
             backup = (
@@ -638,16 +638,16 @@ class AutonomousEngineer:
                 return report
 
             print(
-                "✅ Backup created."
+                "âœ… Backup created."
             )
 
             # -------------------------------------------------
-            # Step 6 — Repair
+            # Step 6 â€” Repair
             # -------------------------------------------------
 
             print()
             print(
-                "🔧 Step 6 — Repair"
+                "ðŸ”§ Step 6 â€” Repair"
             )
 
             repair_result = (
@@ -670,7 +670,7 @@ class AutonomousEngineer:
             ):
 
                 print(
-                    "ℹ️ No automatic repair applied."
+                    "â„¹ï¸ No automatic repair applied."
                 )
 
                 report["stage"] = (
@@ -750,3 +750,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+

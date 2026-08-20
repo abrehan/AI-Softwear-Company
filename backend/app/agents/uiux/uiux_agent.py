@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class UIUXAgent(BaseAgent):
 
     async def design_uiux(self, task: str):
 
-        print("🎨 UI/UX Agent Started")
+        print("ðŸŽ¨ UI/UX Agent Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -121,6 +121,7 @@ Return the result in Markdown.
             result
         )
 
-        print("💾 UI/UX design saved")
+        print("ðŸ’¾ UI/UX design saved")
 
         return result
+

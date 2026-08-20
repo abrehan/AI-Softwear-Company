@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+﻿from dataclasses import dataclass
 from app.board.task_status import TaskStatus
 
 
@@ -18,3 +18,4 @@ class Task:
     assigned_to: str = ""
 
     result: str = ""
+

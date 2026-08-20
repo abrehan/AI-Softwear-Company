@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class SEOAgent(BaseAgent):
 
     async def seo_analysis(self, task: str):
 
-        print("🔍 SEO Specialist Started")
+        print("ðŸ” SEO Specialist Started")
 
         ceo_summary = memory.get("ceo") or ""
         business_analysis = memory.get("business") or ""
@@ -112,6 +112,7 @@ Return Markdown.
             result
         )
 
-        print("💾 SEO strategy saved")
+        print("ðŸ’¾ SEO strategy saved")
 
         return result
+

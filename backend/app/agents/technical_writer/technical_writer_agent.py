@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
@@ -18,7 +18,7 @@ class TechnicalWriterAgent(BaseAgent):
 
     async def write_documentation(self, task: str):
 
-        print("📚 Technical Writer Started")
+        print("ðŸ“š Technical Writer Started")
 
         ceo_summary = memory.get("ceo") or ""
         pm_plan = memory.get("pm") or ""
@@ -113,6 +113,7 @@ Return Markdown.
             result
         )
 
-        print("💾 Technical documentation saved")
+        print("ðŸ’¾ Technical documentation saved")
 
         return result
+
