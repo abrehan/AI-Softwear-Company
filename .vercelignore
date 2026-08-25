@@ -1,0 +1,11 @@
+node_modules/
+frontend/node_modules/
+frontend/dist/
+backend/release_candidate_old/
+backend/release_candidate/
+.git/
+.vercel/
+**/*.backup
+**/*.backup2
+**/*.before_*
+**/*_backup.py
