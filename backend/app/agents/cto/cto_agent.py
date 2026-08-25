@@ -1,4 +1,4 @@
-from app.agents.base_agent import BaseAgent
+﻿from app.agents.base_agent import BaseAgent
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 from app.agents.cto.cto_output_validator import validate_cto_output
@@ -14,9 +14,6 @@ class CTOAgent(BaseAgent):
             agent_key="cto",
         )
 
-        # Explicit CTO model.
-        self.model = "phi3.5:3.8b"
-
     async def run(self, task: str):
         return await self.design_architecture(task)
 
@@ -24,166 +21,209 @@ class CTOAgent(BaseAgent):
 
         print("CTO Agent Started")
 
-        # =====================================================
-        # LOAD AUTHORITATIVE CONTEXT (FIRST!)
-        # =====================================================
+        context = self._load_authoritative_context()
+        context = self._limit_context(context, 900)
 
-        authoritative_context = self._load_authoritative_context()
-
-        if not authoritative_context.strip():
-            authoritative_context = "Not provided in current project context."
-
-        # =====================================================
-        # LOAD DECISION INPUTS
-        # =====================================================
-
-        ceo_summary = memory.get("ceo") or "Not provided in current project context."
-        pm_plan = memory.get("pm") or "Not provided in current project context."
-
-        # Limit context sizes to prevent token overflow
-        authoritative_context = self._limit_context(authoritative_context, 700)
-        ceo_summary = self._limit_context(ceo_summary, 400)
-        pm_plan = self._limit_context(pm_plan, 500)
-        task = self._limit_context(task or "", 400)
-
-        print(
-            "[CTO] Context sizes:",
-            f"authoritative={len(authoritative_context):,}",
-            f"ceo={len(ceo_summary):,}",
-            f"pm={len(pm_plan):,}",
-            f"task={len(task):,}",
+        ceo = self._limit_context(
+            memory.get("ceo") or "Not provided in current project context.",
+            350,
         )
 
-        # =====================================================
-        # BUILD CONTROLLED CONTEXT
-        # =====================================================
+        pm = self._limit_context(
+            memory.get("pm") or "Not provided in current project context.",
+            450,
+        )
 
-        controlled_context = f"""
-AUTHORITATIVE PROJECT CONTEXT:
-{authoritative_context}
-
-CEO INPUT:
-{ceo_summary}
-
-PM INPUT:
-{pm_plan}
-
-TASK:
-{task}
-"""
-
-        # =====================================================
-        # BUILD PROMPT (AFTER ALL VARIABLES ARE DEFINED)
-        # =====================================================
+        task = self._limit_context(task or "", 300)
 
         prompt = f"""
 You are the CTO of an AI Software Company.
 
-You MUST generate a complete architecture document with ALL required sections listed below.
+Create a SHORT architecture document for the TARGET hotel booking project.
 
-DO NOT skip any section. If information is unknown, write:
-"Not provided in current project context."
+IMPORTANT:
+The AI Software Company is the INTERNAL platform.
+Do not confuse it with the hotel booking product.
 
-REQUIRED SECTIONS (You MUST include ALL of these):
-=================================================
+ONLY the AUTHORITATIVE PROJECT CONTEXT confirms existing technology.
+
+CEO and PM are inputs, not proof of existing infrastructure.
+
+RULES:
+- Never invent existing technology.
+- Unknown information = Not provided in current project context.
+- Proposed technology must begin with "Recommended:"
+- Finish EVERY section.
+- Do not stop halfway through a section.
+- Do not repeat sections.
+- Do not use bold text.
+- Keep each section to 1-3 concise bullets.
+- Maximum approximately 500 words.
+
+REQUIRED FORMAT:
 
 # System Architecture
+
 ## Project Overview
+Brief project description.
+
 ## Confirmed Current Architecture
+Only confirmed existing technology.
+
 ## Architecture Gaps
+Only confirmed gaps.
+
 ## Recommended Technology Architecture
+Recommended technologies only.
+
 ## Orchestration Architecture
+Recommended architecture only unless confirmed.
+
 ## Context Architecture
+Explain how project/agent context should be handled.
+
 ## Agent Responsibility Boundaries
+Define boundaries only from available project context.
+
 ## Testing Strategy
+Recommended testing approach.
+
 ## Logging
+Recommended logging approach.
+
 ## Risks
+List 3-4 concise risks.
+
 ## Next Implementation Sequence
+List 5-7 concrete recommended steps.
+
 ## Recommendations
+List 3-5 concrete recommendations.
 
-INSTRUCTIONS:
-=============
-
-1. Write plain text only (NO Markdown formatting except for headings)
-2. Use real newlines (NOT escaped characters like \\n or `n)
-3. Keep each section concise but complete
-4. If something is unknown, say EXACTLY: "Not provided in current project context."
-5. For recommended technologies, explicitly label as: "Recommended: ..."
-6. For risks, label as: "Risk: ..."
-
-SOURCE OF TRUTH:
-===============
-
-AUTHORITATIVE PROJECT CONTEXT is the only source for confirmed project facts.
-CEO and PM information are decision inputs only.
-
-Never invent existing infrastructure. If unknown, say "Not provided in current project context."
-
-PROJECT CONTEXT:
-===============
-
-{authoritative_context}
+AUTHORITATIVE PROJECT CONTEXT:
+{context}
 
 CEO INPUT:
-=========
-
-{ceo_summary}
+{ceo}
 
 PM INPUT:
-========
-
-{pm_plan}
+{pm}
 
 TASK:
-====
-
 {task}
-
-REMEMBER: You MUST include ALL 13 sections listed above. Do not skip any.
 """
 
-        # =====================================================
-        # GENERATE
-        # =====================================================
+        result = await self.think(prompt)
 
-        result = await self.think_with_context(
-            prompt,
-            controlled_context="",
+        result = self._normalize(result)
+
+        if not result:
+            raise RuntimeError("CTO returned an empty architecture document.")
+
+        result = self._ensure_sections(result)
+
+        validation = validate_cto_output(
+            result,
+            context,
         )
 
-        # =====================================================
-        # NORMALIZE OLLAMA RESPONSE
-        # =====================================================
+        if isinstance(validation, tuple):
+            passed, errors = validation
+        else:
+            passed = bool(validation)
+            errors = []
+
+        if not passed:
+            print("CTO validation failed:")
+            for error in errors:
+                print(f"[CTO] {error}")
+
+            raise RuntimeError(
+                "CTO output failed validation: "
+                + "; ".join(str(e) for e in errors)
+            )
+
+        self.remember("cto", result)
+        memory.save("cto", result)
+
+        workspace.save(
+            "architecture/system_architecture.md",
+            result,
+        )
+
+        architecture_file = (
+            self.workspace
+            / "architecture"
+            / "system_architecture.md"
+        )
+
+        architecture_file.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        architecture_file.write_text(
+            result,
+            encoding="utf-8",
+        )
+
+        print(f"Architecture saved: {architecture_file}")
+
+        return result
+
+    def _load_authoritative_context(self):
+
+        file = self.workspace / "project_context.md"
+
+        if not file.exists():
+            return "Not provided in current project context."
+
+        return file.read_text(
+            encoding="utf-8",
+            errors="ignore",
+        )
+
+    @staticmethod
+    def _limit_context(value, maximum):
+
+        value = value or ""
+
+        if len(value) <= maximum:
+            return value
+
+        return value[:maximum] + "\n[Context truncated.]"
+
+    @staticmethod
+    def _normalize(result):
 
         result = (result or "").strip()
 
-        # Convert escaped newlines to real newlines
-        result = result.replace("\\n", "\n")
         result = result.replace("\\r\\n", "\n")
-        result = result.replace("`n", "\n")
+        result = result.replace("\\n", "\n")
         result = result.replace("`r`n", "\n")
+        result = result.replace("`n", "\n")
 
-        # Remove markdown code fences
-        result = re.sub(r'```(?:markdown|md)?', '', result)
-        result = result.replace('```', '')
-        result = result.strip()
+        result = re.sub(
+            r"```(?:markdown|md)?",
+            "",
+            result,
+            flags=re.IGNORECASE,
+        )
 
-        print("\n" + "=" * 70)
-        print("NORMALIZED OUTPUT CHECK:")
-        print("-" * 70)
-        if '\\n' in result:
-            print("WARNING: Still contains \\n characters!")
-        if '`n' in result:
-            print("WARNING: Still contains `n characters!")
-        else:
-            print("✓ No escaped newlines found")
-        print("=" * 70 + "\n")
+        result = result.replace("```", "")
 
-        # =====================================================
-        # ENSURE ALL REQUIRED SECTIONS EXIST
-        # =====================================================
+        result = re.sub(
+            r"\*\*(.*?)\*\*",
+            r"\1",
+            result,
+        )
 
-        required_headings = [
+        return result.strip()
+
+    @staticmethod
+    def _ensure_sections(result):
+
+        sections = [
             "# System Architecture",
             "## Project Overview",
             "## Confirmed Current Architecture",
@@ -199,141 +239,54 @@ REMEMBER: You MUST include ALL 13 sections listed above. Do not skip any.
             "## Recommendations",
         ]
 
-        # Add any missing sections
-        for heading in required_headings:
-            if heading.lower() not in result.lower():
-                result += f"\n\n{heading}\n\nNot provided in current project context."
+        # Normalize headings.
+        for section in sections:
+            result = re.sub(
+                rf"^\s*\*{{0,2}}{re.escape(section)}\*{{0,2}}\s*$",
+                section,
+                result,
+                flags=re.IGNORECASE | re.MULTILINE,
+            )
 
-        # =====================================================
-        # OLLAMA FAILURE CHECK
-        # =====================================================
+        # Remove duplicate headings while keeping first occurrence.
+        lines = result.splitlines()
+        output = []
+        seen = set()
 
-        failure_markers = [
-            "Ollama generation exceeded",
-            "Ollama connection timed out",
-            "Ollama is unavailable",
-            "Ollama HTTP Error",
-        ]
+        for line in lines:
 
-        if any(marker.lower() in result.lower() for marker in failure_markers):
-            print("=" * 70)
-            print("CTO OLLAMA GENERATION FAILED")
-            print("=" * 70)
-            print(result)
-            print("=" * 70)
-            raise RuntimeError(f"CTO generation failed: {result}")
+            normalized = line.strip().lower()
 
-        if not result:
-            raise RuntimeError("CTO returned an empty architecture document.")
+            matched = None
 
-        # =====================================================
-        # VALIDATE
-        # =====================================================
+            for section in sections:
+                if normalized == section.lower():
+                    matched = section
+                    break
 
-        max_attempts = 3
-        validation_errors = []
+            if matched:
+                key = matched.lower()
 
-        for attempt in range(1, max_attempts + 1):
-            print(f"[CTO] Output validation attempt {attempt}/{max_attempts}")
+                if key in seen:
+                    continue
 
-            validation_result = validate_cto_output(result, authoritative_context)
-
-            if isinstance(validation_result, tuple):
-                validation_passed, validation_errors = validation_result
+                seen.add(key)
+                output.append(matched)
             else:
-                validation_passed = bool(validation_result)
-                validation_errors = []
+                output.append(line)
 
-            if validation_passed:
-                print("CTO output validation: PASS")
-                break
+        result = "\n".join(output).strip()
 
-            print("CTO OUTPUT VALIDATION FAILED")
-            if validation_errors:
-                for error in validation_errors:
-                    print(f"[CTO VALIDATION] {error}")
+        # Add missing sections at the END only.
+        for section in sections:
 
-            if attempt >= max_attempts:
-                raise RuntimeError(
-                    f"CTO output failed validation after {max_attempts} attempts: "
-                    + "; ".join(str(e) for e in validation_errors)
+            if section.lower() not in result.lower():
+
+                result += (
+                    "\n\n"
+                    + section
+                    + "\n"
+                    + "Not provided in current project context."
                 )
 
-            # Correction prompt
-            correction_prompt = f"""
-The previous CTO response failed validation.
-
-VALIDATION ERRORS:
-{chr(10).join(f'- {e}' for e in validation_errors)}
-
-REQUIRED SECTIONS:
-# System Architecture
-## Project Overview
-## Confirmed Current Architecture
-## Architecture Gaps
-## Recommended Technology Architecture
-## Orchestration Architecture
-## Context Architecture
-## Agent Responsibility Boundaries
-## Testing Strategy
-## Logging
-## Risks
-## Next Implementation Sequence
-## Recommendations
-
-PROJECT CONTEXT:
-{authoritative_context}
-
-Return a corrected architecture document with ALL required sections.
-Use "Not provided in current project context." for unknown information.
-
-PREVIOUS RESPONSE:
-{result}
-"""
-
-            print("[CTO] Requesting corrected architecture...")
-            result = await self.think_with_context(correction_prompt, controlled_context=controlled_context)
-
-            # Re-normalize
-            result = (result or "").strip()
-            result = result.replace("\\n", "\n")
-            result = result.replace("`n", "\n")
-            result = re.sub(r'```(?:markdown|md)?', '', result)
-            result = result.replace('```', '')
-            result = result.strip()
-
-            # Re-add missing sections
-            for heading in required_headings:
-                if heading.lower() not in result.lower():
-                    result += f"\n\n{heading}\n\nNot provided in current project context."
-
-        # =====================================================
-        # PERSIST
-        # =====================================================
-
-        self.remember("cto", result)
-        memory.save("cto", result)
-
-        from pathlib import Path
-        project_root = Path(__file__).resolve().parents[4]
-        architecture_dir = project_root / "workspace" / "architecture"
-        architecture_dir.mkdir(parents=True, exist_ok=True)
-
-        architecture_file = architecture_dir / "system_architecture.md"
-        architecture_file.write_text(result, encoding="utf-8")
-
-        print(f"Architecture saved: {architecture_file}")
-        return result
-
-    def _load_authoritative_context(self) -> str:
-        context_file = self.workspace / "project_context.md"
-        if not context_file.exists():
-            return "Not provided in current project context."
-        return context_file.read_text(encoding="utf-8", errors="ignore")
-
-    @staticmethod
-    def _limit_context(value: str, maximum: int) -> str:
-        value = value or ""
-        if len(value) <= maximum:
-            return value
-        return value[:maximum] + "\n\n[Context truncated for CTO processing.]"
+        return result.strip()

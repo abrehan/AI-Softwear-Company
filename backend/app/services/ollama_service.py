@@ -1,4 +1,4 @@
-﻿import os
+import os
 import httpx
 
 
@@ -15,7 +15,7 @@ class OllamaService:
         )
 
         self.read_timeout = float(
-            os.getenv("OLLAMA_READ_TIMEOUT", "180")
+            os.getenv("OLLAMA_READ_TIMEOUT", "300")
         )
 
         self.write_timeout = float(
@@ -26,11 +26,19 @@ class OllamaService:
             os.getenv("OLLAMA_POOL_TIMEOUT", "10")
         )
 
-        self.num_predict = int(os.getenv("OLLAMA_NUM_PREDICT", "500"))
+        self.num_predict = int(
+            os.getenv("OLLAMA_NUM_PREDICT", "700")
+        )
 
-        self.num_ctx = int(os.getenv("OLLAMA_NUM_CTX", "4096"))
+        self.num_ctx = int(
+            os.getenv("OLLAMA_NUM_CTX", "4096")
+        )
 
-    async def generate(self, prompt: str, model: str):
+        self.temperature = float(
+            os.getenv("OLLAMA_TEMPERATURE", "0.1")
+        )
+
+    async def generate(self, prompt: str, model: str) -> str:
 
         print(f"[OLLAMA] URL: {self.base_url}")
         print(f"[OLLAMA] Using model: {model}")
@@ -46,21 +54,23 @@ class OllamaService:
             pool=self.pool_timeout,
         )
 
+        payload = {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "num_predict": self.num_predict,
+                "num_ctx": self.num_ctx,
+                "temperature": self.temperature,
+            },
+        }
+
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
 
                 response = await client.post(
                     f"{self.base_url}/api/generate",
-                    json={
-                        "model": model,
-                        "prompt": prompt,
-                        "stream": False,
-                        "options": {
-                            "num_predict": self.num_predict,
-                            "num_ctx": self.num_ctx,
-                            "temperature": 0.1,
-                        },
-                    }
+                    json=payload,
                 )
 
                 response.raise_for_status()
@@ -69,6 +79,11 @@ class OllamaService:
 
                 result = (data.get("response") or "").strip()
 
+                if not result:
+                    raise RuntimeError(
+                        f"Ollama returned an empty response for model '{model}'."
+                    )
+
                 print(
                     f"[OLLAMA] Response received "
                     f"({len(result):,} characters)."
@@ -76,24 +91,37 @@ class OllamaService:
 
                 return result
 
-        except httpx.ConnectTimeout:
-            return "Ollama connection timed out."
+        except httpx.ConnectTimeout as e:
+            raise RuntimeError(
+                f"Ollama connection timed out after "
+                f"{self.connect_timeout:g} seconds."
+            ) from e
 
-        except httpx.ReadTimeout:
-            return (
-                f"Ollama generation exceeded "
+        except httpx.ReadTimeout as e:
+            raise RuntimeError(
+                f"Ollama model '{model}' did not finish generation within "
                 f"{self.read_timeout:g} seconds."
-            )
+            ) from e
 
-        except httpx.ConnectError:
-            return (
-                "Ollama is unavailable from this deployment. "
-                "The configured Ollama endpoint is not reachable."
-            )
+        except httpx.ConnectError as e:
+            raise RuntimeError(
+                "Ollama is unavailable. "
+                f"Could not connect to {self.base_url}."
+            ) from e
 
         except httpx.HTTPStatusError as e:
-            return f"Ollama HTTP Error {e.response.status_code}"
+            body = e.response.text[:500]
+
+            raise RuntimeError(
+                f"Ollama HTTP error {e.response.status_code}: {body}"
+            ) from e
+
+        except httpx.RequestError as e:
+            raise RuntimeError(
+                f"Ollama request failed: {str(e)}"
+            ) from e
 
         except Exception as e:
-            return f"Unexpected Ollama Error: {str(e)}"
-
+            raise RuntimeError(
+                f"Unexpected Ollama error: {str(e)}"
+            ) from e

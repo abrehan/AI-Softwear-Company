@@ -1,129 +1,255 @@
 ﻿import re
 
+
+REQUIRED_SECTIONS = [
+    "System Architecture",
+    "Project Overview",
+    "Confirmed Current Architecture",
+    "Architecture Gaps",
+    "Recommended Technology Architecture",
+    "Orchestration Architecture",
+    "Context Architecture",
+    "Agent Responsibility Boundaries",
+    "Testing Strategy",
+    "Logging",
+    "Risks",
+    "Next Implementation Sequence",
+    "Recommendations",
+]
+
+
 def validate_cto_output(result, authoritative_context):
-    """Validate CTO output with lenient checking."""
-    
+    """Validate CTO architecture without requiring exact Markdown formatting."""
+
     if not result:
         return False, ["Empty CTO output"]
-    
-    # Pre-normalize the result
-    result = (result or "").strip()
-    result = result.replace("\\n", "\n")
-    result = result.replace("`n", "\n")
-    result = re.sub(r'```(?:markdown|md)?', '', result)
-    result = result.replace('```', '')
-    result = result.strip()
-    
+
+    result = normalize_cto_output(result)
+
     errors = []
-    
-    # Required sections (check for existence, not strict formatting)
-    required_sections = [
-        "# System Architecture",
-        "## Project Overview",
-        "## Confirmed Current Architecture",
-        "## Architecture Gaps",
-        "## Recommended Technology Architecture",
-        "## Orchestration Architecture",
-        "## Context Architecture",
-        "## Agent Responsibility Boundaries",
-        "## Testing Strategy",
-        "## Logging",
-        "## Risks",
-        "## Next Implementation Sequence",
-        "## Recommendations",
+
+    # ---------------------------------------------------------
+    # REQUIRED SECTIONS
+    # ---------------------------------------------------------
+
+    for section in REQUIRED_SECTIONS:
+        if not section_exists(result, section):
+            errors.append(
+                f"Missing required section: {section}"
+            )
+
+    # ---------------------------------------------------------
+    # CHECK FOR DUPLICATE SECTION BLOCKS
+    # ---------------------------------------------------------
+
+    for section in REQUIRED_SECTIONS:
+        count = count_section(result, section)
+
+        if count > 1:
+            errors.append(
+                f"Duplicate section detected: {section}"
+            )
+
+    # ---------------------------------------------------------
+    # CHECK CONFIRMED ARCHITECTURE
+    # ---------------------------------------------------------
+
+    confirmed = extract_section(
+        result,
+        "Confirmed Current Architecture",
+    )
+
+    authoritative_lower = (
+        authoritative_context or ""
+    ).lower()
+
+    suspicious_technologies = [
+        "postgresql",
+        "sqlalchemy",
+        "rabbitmq",
+        "docker",
+        "kubernetes",
+        "istio",
+        "loggly",
+        "prometheus",
+        "grafana",
+        "microservices",
+        "oauth",
+        "jwt",
     ]
-    
-    # Check if all sections exist (case insensitive)
-    for section in required_sections:
-        if section.lower() not in result.lower():
-            errors.append(f"Missing required section: {section}")
-    
-    # Check Architecture Gaps
-    if "## architecture gaps" in result.lower():
-        gaps_section = _extract_section(result, "## architecture gaps")
-        if "not provided" not in gaps_section.lower():
-            # Check if there's actual content, not just the default
-            lines = [l.strip() for l in gaps_section.split('\n') if l.strip() and '##' not in l]
-            if lines:
-                # Has content, that's fine - it's a real gap
-                pass
-            else:
-                errors.append("Architecture Gaps section is empty")
-    
-    # Check unconfirmed technologies - More lenient
-    # If technologies appear in Orchestration, just warn but don't fail
-    if "## orchestration architecture" in result.lower():
-        orch_section = _extract_section(result, "## orchestration architecture")
-        orch_lower = orch_section.lower()
-        
-        # Check for common unconfirmed techs
-        techs = ["docker", "kubernetes", "k8s", "helm", "istio", "envoy", "prometheus", "grafana"]
-        found_techs = []
-        for tech in techs:
-            if tech in orch_lower:
-                found_techs.append(tech)
-        
-        if found_techs:
-            # Check if labeled properly
-            has_recommended = "recommended" in orch_lower
-            has_proposed = "proposed" in orch_lower
-            has_not_provided = "not provided" in orch_lower
-            
-            if not (has_recommended or has_proposed or has_not_provided):
-                # Instead of failing, add a note but pass validation
-                # This is a warning, not an error
-                pass
-    
-    # Check Risks
-    if "## risks" in result.lower():
-        risks_section = _extract_section(result, "## risks")
-        if "not provided" not in risks_section.lower():
-            # Check if there's actual risk content
-            lines = [l.strip() for l in risks_section.split('\n') if l.strip() and '##' not in l]
-            if lines:
-                # Has risks - make sure they're labeled
-                for line in lines:
-                    if not any(keyword in line.lower() for keyword in ["risk:", "recommended risk"]):
-                        # It's okay, the section has risks listed
-                        pass
-    
-    # Check Agent Responsibility Boundaries
-    if "## agent responsibility boundaries" in result.lower():
-        resp_section = _extract_section(result, "## agent responsibility boundaries")
-        resp_lower = resp_section.lower()
-        
-        if "not provided" not in resp_lower:
-            # Check if responsibilities are listed
-            lines = [l.strip() for l in resp_section.split('\n') if l.strip() and '##' not in l]
-            if lines:
-                # Has responsibilities - may not be labeled properly but that's okay
-                # Just check if it looks like actual content
-                if not any(keyword in resp_lower for keyword in ["recommended", "proposed", "confirmed"]):
-                    # Add a note but don't fail
-                    pass
-    
-    # Return result - only fail on missing sections or empty content
+
+    for technology in suspicious_technologies:
+        if technology in confirmed.lower():
+            if technology not in authoritative_lower:
+                errors.append(
+                    f"Unconfirmed technology presented as current architecture: {technology}"
+                )
+
+    # ---------------------------------------------------------
+    # CHECK RECOMMENDATIONS
+    # ---------------------------------------------------------
+
+    recommended = extract_section(
+        result,
+        "Recommended Technology Architecture",
+    )
+
+    # Recommendations are allowed to contain proposed
+    # technologies.
+
+    # ---------------------------------------------------------
+    # RETURN
+    # ---------------------------------------------------------
+
     if errors:
         return False, errors
-    
+
     return True, []
 
-def _extract_section(text, section_header):
-    """Extract a section from the text."""
-    text_lower = text.lower()
-    section_lower = section_header.lower()
-    
-    start = text_lower.find(section_lower)
-    if start == -1:
+
+def normalize_cto_output(result):
+    result = (result or "").strip()
+
+    # Convert escaped newlines.
+    result = result.replace("\\r\\n", "\n")
+    result = result.replace("\\n", "\n")
+    result = result.replace("`r`n", "\n")
+    result = result.replace("`n", "\n")
+
+    # Remove code fences.
+    result = re.sub(
+        r"```(?:markdown|md|text)?",
+        "",
+        result,
+        flags=re.IGNORECASE,
+    )
+
+    result = result.replace("```", "")
+
+    # Normalize bold headings:
+    #
+    # **Project Overview**
+    #
+    # becomes
+    #
+    # ## Project Overview
+    #
+    for section in REQUIRED_SECTIONS:
+        pattern = rf"^\s*\*\*{re.escape(section)}\*\*\s*$"
+
+        result = re.sub(
+            pattern,
+            f"## {section}",
+            result,
+            flags=re.IGNORECASE | re.MULTILINE,
+        )
+
+    # Normalize "# System Architecture" variations.
+    result = re.sub(
+        r"^\s*\*\*System Architecture\*\*\s*$",
+        "# System Architecture",
+        result,
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+
+    # Remove accidental duplicated empty sections later.
+    result = remove_duplicate_empty_sections(result)
+
+    return result.strip()
+
+
+def section_exists(text, section):
+    pattern = rf"(?im)^\s*(?:#+\s*)?{re.escape(section)}\s*$"
+
+    return re.search(pattern, text) is not None
+
+
+def count_section(text, section):
+    pattern = rf"(?im)^\s*(?:#+\s*)?{re.escape(section)}\s*$"
+
+    return len(re.findall(pattern, text))
+
+
+def extract_section(text, section):
+    lines = text.splitlines()
+
+    start = None
+
+    for index, line in enumerate(lines):
+        normalized = re.sub(
+            r"^\s*#+\s*",
+            "",
+            line.strip(),
+        ).strip()
+
+        normalized = normalized.strip("* ").strip()
+
+        if normalized.lower() == section.lower():
+            start = index
+            break
+
+    if start is None:
         return ""
-    
-    # Find the next section header
-    next_headers = ["## ", "# "]
-    end = len(text)
-    
-    for header in next_headers:
-        pos = text_lower.find(header.lower(), start + len(section_lower))
-        if pos != -1 and pos < end:
-            end = pos
-    
-    return text[start:end]
+
+    content = []
+
+    for line in lines[start + 1:]:
+        stripped = line.strip()
+
+        # Stop at next Markdown heading.
+        if re.match(r"^#{1,6}\s+", stripped):
+            break
+
+        content.append(line)
+
+    return "\n".join(content).strip()
+
+
+def remove_duplicate_empty_sections(text):
+    lines = text.splitlines()
+
+    seen = set()
+    output = []
+
+    i = 0
+
+    while i < len(lines):
+        line = lines[i]
+
+        normalized = re.sub(
+            r"^\s*#+\s*",
+            "",
+            line.strip(),
+        ).strip()
+
+        normalized = normalized.strip("* ").strip()
+
+        if normalized.lower() in {
+            section.lower()
+            for section in REQUIRED_SECTIONS
+        }:
+            key = normalized.lower()
+
+            # Look ahead to determine whether this section
+            # is empty.
+            j = i + 1
+
+            while j < len(lines) and not lines[j].strip():
+                j += 1
+
+            is_empty = (
+                j >= len(lines)
+                or lines[j].strip().lower()
+                == "not provided in current project context."
+            )
+
+            if key in seen and is_empty:
+                i = j + 1
+                continue
+
+            seen.add(key)
+
+        output.append(line)
+        i += 1
+
+    return "\n".join(output)

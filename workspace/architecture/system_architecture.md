@@ -1,53 +1,44 @@
 # System Architecture
 
 ## Project Overview
-The project entails developing a multi-tenant hotel booking platform that integrates payment processing, user authentication, and supplier APIs. The platform aims to deliver a seamless user experience with a high-quality interface.
+The project entails developing a multi-tenant hotel booking platform that integrates with various suppliers and supports multiple currencies, with a focus on a seamless user experience across devices.
 
 ## Confirmed Current Architecture
-- FastAPI backend
-- Python
-- SQLAlchmey database layer
-- Agent Registry
-- REST API
-- Ollama local AI integration
-- Model Router
-- Project memory/workspace system
+The backend is built on FastAPI with Python, utilizing SQLAlch0m for database interactions. The system includes an Agent Registry, REST API, Ollama for local AI integration, and a Model Router.
 
 ## Architecture Gaps
-- Payment processing integration
-- User authentication system
-- Supplier API integration
-- Multi-tenancy support
-- Scalability for future expansion
+- No current mobile-responsive design (Recommended: Implement a responsive design framework).
+- Payment processing integration is not specified (Recommended: Integrate with Stripe for secure payments).
+- User authentication and profile management are not detailed (Recommended: Implement OAuth2 for secure authentication).
+- Supplier API integration is mentioned but not detailed (Recommended: Develop APIs for HotelBeds and Expedia integration).
+- Multi-currency support is required but not addressed (Recommended: Implement currency conversion logic).
 
 ## Recommended Technology Architecture
-Recommended:
-- Extend the current FastAPI backend with payment processing libraries (Recommended: Stripe or PayPal)
-- Implement OAuth2 for user authentication (Recommended: Auth0 or Keycloak)
-- Integrate supplier APIs using REST or GraphQL (Recommended: Apollo Server for GraphQL)
-- Design a multi-tenant database schema with SQLAlchemy (Recommended: PostgreSQL with multi-tenancy extensions)
+- Frontend: React or Angular for a dynamic and responsive user interface.
+- Backend: FastAPI with Python, SQLAlchemy, and Ollama for AI integration.
+- Database: PostgreSQL for relational data storage.
+- Payment: Stripe API for secure transactions.
+- Authentication: OAuth2 with FastAPI.
+- Supplier Integration: Custom APIs for HotelBeds and Expedia.
+- Currency: Real-time currency conversion service or library.
 
 ## Orchestration Architecture
-- Use Docker containers for isolation and scalability
-- Employ Kubernetes for orchestration and auto-scaling
-- Implement CI/CD pipelines with GitHub Actions or GitLab CI for automated testing and deployment
+Microservices architecture with Docker containers for each component, orchestrated by Kubernetes for scalability and resilience.
 
 ## Context Architecture
-- The system will serve multiple hotels as separate tenants
-- Each tenant will have its own database schema and user management
-- Shared resources like payment processing and supplier APIs will be centrally managed
+The system must be scalable to handle multiple tenants, with isolated databases and resources.
 
 ## Agent Responsibility Boundaries
-- Booking Agent: Manages booking creation, modification, and cancellation
-- Authentication Agent: Handles user login, session management, and access control
-- Payment Agent: Processes payments and integrates with payment gateways
-- Supplier Agent: Interacts with supplier APIs for hotel amenities and services
+- Search Agent: Responsible for hotel search and filtering.
+- Booking Agent: Handles the booking process and reservation management.
+- Payment Agent: Manages payment transactions and integrations.
+- Authentication Agent: Manages user authentication and profile management.
+- Supplier Integration Agent: Handles communication with external suppliers.
+- Admin Dashboard Agent
 
 ## Testing Strategy
-- Unit tests for each agent
-- Integration tests for agent interactions
-- End-to-end tests for the complete booking flow
-- Continuous testing with automated pipelines
+
+Not provided in current project context.
 
 ## Logging
 

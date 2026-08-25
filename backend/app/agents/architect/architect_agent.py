@@ -1,45 +1,73 @@
-﻿import asyncio
-from app.managers.agent_manager import AgentManager
+﻿from app.agents.base_agent import BaseAgent
+from app.memory.project_memory import memory
+from app.workspace.workspace import workspace
 
-
-class Company:
-
+class ArchitectAgent(BaseAgent):
+    """Architect Agent - Designs system architecture and technical solutions."""
+    
     def __init__(self):
-        self.manager = AgentManager()
+        super().__init__(
+            "Architect Agent",
+            "System Architect",
+            agent_key="architect",
+        )
+        self.model = "llama3.2:3b"
+    
+    async def run(self, task: str):
+        return await self.design_architecture(task)
+    
+    async def design_architecture(self, task: str):
+        print("🏗️ Architect Agent: Designing architecture...")
+        
+        # Get context from memory
+        ceo_summary = memory.get("ceo") or "Not provided"
+        pm_plan = memory.get("pm") or "Not provided"
+        cto_arch = memory.get("cto") or "Not provided"
+        
+        prompt = f"""
+You are a Senior System Architect.
 
-    async def execute_project(self, task: str):
+Based on the following information, design a comprehensive system architecture.
 
-        print("ðŸ¢ AI Company Started")
+CEO ANALYSIS:
+{ceo_summary}
 
-        agents = self.manager.list_agents()
+PM PLAN:
+{pm_plan}
 
-        print("Registered Agents:", agents)
-        print("Total Agents:", len(agents)) 
+CTO ARCHITECTURE:
+{cto_arch}
 
-        semaphore = asyncio.Semaphore(3)
+ORIGINAL TASK:
+{task}
 
-        async def run_agent(agent_name):
+Create a detailed architecture design with:
 
-            async with semaphore:
+# System Architecture Design
 
-                print(f"ðŸš€ Starting {agent_name.upper()} Agent...")
+## Overview
+## Architecture Principles
+## High-Level Architecture
+## Component Breakdown
+## Technology Stack
+## Data Flow
+## Security Architecture
+## Scalability Strategy
+## Performance Considerations
+## Deployment Strategy
+## Monitoring & Observability
+## Disaster Recovery
+## Future Considerations
 
-                try:
-                    result = await self.manager.execute(agent_name, task)
+Be specific and practical. Use real technologies where appropriate.
+If information is unknown, say "Not provided in current project context."
+"""
 
-                    print(f"âœ… Finished {agent_name.upper()} Agent")
-
-                    return agent_name, result
-
-                except Exception as e:
-
-                    print(f"âŒ {agent_name.upper()} Error:", e)
-
-                    return agent_name, str(e)
-
-        tasks = [run_agent(agent) for agent in agents]
-
-        results = await asyncio.gather(*tasks)
-
-        return {name: result for name, result in results}
-
+        result = await self.think_with_context(prompt)
+        
+        self.remember("architect", result)
+        memory.save("architect", result)
+        workspace.save("architecture/architect_design.md", result)
+        
+        print("💾 Architecture design saved")
+        return result

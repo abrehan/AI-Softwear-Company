@@ -42,16 +42,9 @@
         "file_planner",
     ],
 
-    "security": [
-        "backend",
-        "database",
-    ],
+    "security": ["qa"],
 
-    "devops": [
-        "backend",
-        "frontend",
-        "database",
-    ],
+    "devops": ["backend", "frontend", "database", "security"],
 
     # =====================================================
     # AI DEPARTMENT
@@ -114,12 +107,7 @@
     # =====================================================
     # QUALITY
     # =====================================================
-    "qa": [
-        "backend",
-        "frontend",
-        "database",
-        "security",
-    ],
+    "qa": ["backend", "frontend", "database"],
 
     "devsecops": [
         "devops",
@@ -143,4 +131,6 @@
         "writer",
     ],
 }
+
+
 

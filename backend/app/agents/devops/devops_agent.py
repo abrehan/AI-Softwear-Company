@@ -8,73 +8,62 @@ class DevOpsAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             "DevOps Agent",
-            "DevOps Engineer"
+            "DevOps Engineer",
+            agent_key="devops",
         )
-
-        self.model = "llama3.2:3b"
 
     async def run(self, task: str):
         return await self.deploy_project(task)
 
     async def deploy_project(self, task: str):
 
-        print("ðŸš€ DevOps Agent Started")
+        print("DevOps Agent Started")
 
-        ceo_summary = memory.get("ceo") or ""
-        pm_plan = memory.get("pm") or ""
-        cto_architecture = memory.get("cto") or ""
-        backend_design = memory.get("backend") or ""
-        frontend_design = memory.get("frontend") or ""
-        database_design = memory.get("database") or ""
+        ceo_summary = self._get("ceo")
+        pm_plan = self._get("pm")
+        cto_architecture = self._get("cto")
+        backend_design = self._get("backend")
+        frontend_design = self._get("frontend")
+        database_design = self._get("database")
+        qa_plan = self._get("qa")
+        security_plan = self._get("security")
+
+        ceo_summary = self._limit(ceo_summary, 250)
+        pm_plan = self._limit(pm_plan, 350)
+        cto_architecture = self._limit(cto_architecture, 650)
+        backend_design = self._limit(backend_design, 500)
+        frontend_design = self._limit(frontend_design, 350)
+        database_design = self._limit(database_design, 400)
+        qa_plan = self._limit(qa_plan, 350)
+        security_plan = self._limit(security_plan, 400)
+        task = self._limit(task or "", 300)
 
         prompt = f"""
-You are a Senior DevOps Engineer.
+You are the DevOps Engineer for an AI Software Company.
 
-==================================================
-CEO PROJECT ANALYSIS
-==================================================
+Create a concise deployment and operations plan for the target project.
 
-{ceo_summary}
+IMPORTANT SYSTEM SEPARATION:
 
-==================================================
-PROJECT PLAN
-==================================================
+The AI Software Company is the internal orchestration platform.
+The target project is the product managed by that platform.
 
-{pm_plan}
+RULES:
 
-==================================================
-SYSTEM ARCHITECTURE
-==================================================
+1. Use only the supplied project information.
+2. Do not claim infrastructure already exists unless confirmed.
+3. Do not invent cloud providers, servers, domains, production
+   deployments, Kubernetes clusters, Docker environments, or CI/CD
+   systems.
+4. Every proposal must begin with:
+   Recommended:
+5. Unknown information must say:
+   Not provided in current project context.
+6. Do not claim deployment has occurred.
+7. Keep the output concise.
+8. Complete every section.
 
-{cto_architecture}
-
-==================================================
-BACKEND DESIGN
-==================================================
-
-{backend_design}
-
-==================================================
-FRONTEND DESIGN
-==================================================
-
-{frontend_design}
-
-==================================================
-DATABASE DESIGN
-==================================================
-
-{database_design}
-
-==================================================
-ORIGINAL PROJECT
-==================================================
-
-{task}
-
-Create a complete DevOps deployment strategy.
-
-Return the result in Markdown.
+RETURN EXACTLY:
 
 # DevOps Deployment
 
@@ -117,20 +106,86 @@ Return the result in Markdown.
 ## Security Best Practices
 
 ## Future Improvements
+
+CEO:
+{ceo_summary}
+
+PM:
+{pm_plan}
+
+CTO:
+{cto_architecture}
+
+BACKEND:
+{backend_design}
+
+FRONTEND:
+{frontend_design}
+
+DATABASE:
+{database_design}
+
+QA:
+{qa_plan}
+
+SECURITY:
+{security_plan}
+
+TASK:
+{task}
+
+Unknown items must use:
+Not provided in current project context.
+
+Recommendations must begin with:
+Recommended:
 """
 
-        result = await self.think_with_context(task)
+        result = await self.think(prompt)
 
-        self.remember(task, result)
+        result = self._normalize(result)
 
+        if not result:
+            raise RuntimeError(
+                "DevOps Agent returned an empty deployment plan."
+            )
+
+        self.remember("devops", result)
         memory.save("devops", result)
 
         workspace.save(
             "devops/devops_deployment.md",
-            result
+            result,
         )
 
-        print("ðŸ’¾ DevOps deployment saved")
+        print("DevOps deployment saved")
 
         return result
 
+    def _get(self, key: str) -> str:
+        value = memory.get(key)
+
+        if value:
+            return value
+
+        return "Not provided in current project context."
+
+    @staticmethod
+    def _limit(value: str, maximum: int) -> str:
+        value = str(value or "")
+
+        if len(value) <= maximum:
+            return value
+
+        return value[:maximum] + "\n[Context truncated.]"
+
+    @staticmethod
+    def _normalize(result: str) -> str:
+        result = (result or "").strip()
+
+        result = result.replace("\\r\\n", "\n")
+        result = result.replace("\\n", "\n")
+        result = result.replace("`r`n", "\n")
+        result = result.replace("`n", "\n")
+
+        return result.strip()

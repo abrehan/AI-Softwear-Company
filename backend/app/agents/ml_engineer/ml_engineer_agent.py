@@ -8,7 +8,7 @@ class MLEngineerAgent(BaseAgent):
     def __init__(self):
         super().__init__(
             "ML Engineer",
-            "Senior Machine Learning Engineer"
+            "Senior Machine Learning Engineer",
         )
 
         self.model = "llama3.2:3b"
@@ -18,103 +18,93 @@ class MLEngineerAgent(BaseAgent):
 
     async def design_ml_system(self, task: str):
 
-        print("ðŸ§  ML Engineer Started")
+        print("ML Engineer Started")
 
-        ceo_summary = memory.get("ceo") or ""
-        pm_plan = memory.get("pm") or ""
-        cto_architecture = memory.get("cto") or ""
-        ai_engineering = memory.get("ai") or ""
+        ceo_summary = self._limit(
+            memory.get("ceo") or "",
+            700,
+        )
+
+        cto_architecture = self._limit(
+            memory.get("cto") or "",
+            1200,
+        )
+
+        ai_engineering = self._limit(
+            memory.get("ai") or "",
+            1000,
+        )
+
+        project = self._limit(
+            task,
+            600,
+        )
 
         prompt = f"""
 You are a Senior Machine Learning Engineer.
 
-==================================================
-CEO ANALYSIS
-==================================================
+Design the ML architecture for this project.
 
+CEO SUMMARY:
 {ceo_summary}
 
-==================================================
-PROJECT PLAN
-==================================================
-
-{pm_plan}
-
-==================================================
-SYSTEM ARCHITECTURE
-==================================================
-
+SYSTEM ARCHITECTURE:
 {cto_architecture}
 
-==================================================
-AI ENGINEERING
-==================================================
-
+AI ENGINEERING:
 {ai_engineering}
 
-==================================================
-PROJECT
-==================================================
+PROJECT:
+{project}
 
-{task}
+Keep the response concise and practical.
 
-Design the Machine Learning architecture.
-
-Return Markdown.
+Return Markdown with exactly these sections:
 
 # Machine Learning Engineering
-
 ## ML Overview
-
 ## ML Objectives
-
-## Datasets
-
-## Data Collection
-
-## Data Cleaning
-
+## Data Strategy
 ## Feature Engineering
-
-## Training Pipeline
-
 ## Model Selection
-
-## Deep Learning
-
-## Recommendation Engine
-
-## Classification
-
-## Regression
-
-## Clustering
-
-## Forecasting
-
-## Evaluation Metrics
-
-## Model Deployment
-
+## Training Pipeline
+## Evaluation
+## Deployment
 ## Monitoring
-
-## Retraining Strategy
-
+## Retraining
 ## Future Improvements
 """
 
-        result = await self.think_with_context(task)
+        result = await self.think(prompt)
 
         self.remember(task, result)
 
-        memory.save("ml", result)
+        memory.save(
+            "ml",
+            result,
+        )
 
         workspace.save(
             "ml/ml_engineering.md",
-            result
+            result,
         )
 
-        print("ðŸ’¾ ML engineering saved")
+        print("ML engineering saved")
 
         return result
 
+    @staticmethod
+    def _limit(
+        value: str,
+        maximum: int,
+    ) -> str:
+
+        value = str(value or "")
+
+        if len(value) <= maximum:
+            return value
+
+        return (
+            value[:maximum]
+            + "\n[Context truncated.]"
+        )

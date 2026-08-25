@@ -57,3 +57,13 @@ backend/.qa_orchestrator/
 backend/app/engineering/orchestrator/*.bak
 backend/app/engineering/orchestrator/*.backup
 backend/app/engineering/orchestrator/*.before_prompt_fix
+
+# Development backups and generated release candidates
+backend/release_candidate_old/
+*.before_*
+*.backup
+*.backup2
+
+backend/release_candidate/
+*.backup
+*.backup2

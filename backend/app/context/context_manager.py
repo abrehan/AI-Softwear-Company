@@ -169,4 +169,18 @@ project facts unless explicitly promoted by an approved process.
         return self.read_supporting_file(relative_path)
 
 
+    # --------------------------------------------------------
+    # DEFAULT CONTEXT API
+    # --------------------------------------------------------
+
+    def build_context(self) -> str:
+        """
+        Build the default controlled context used by BaseAgent.
+
+        This compatibility method preserves the existing
+        authoritative-context rules.
+        """
+        return self.build_agent_context()
+
+
 context_manager = ContextManager()

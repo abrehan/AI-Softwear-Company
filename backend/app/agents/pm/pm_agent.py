@@ -2,94 +2,123 @@
 from app.memory.project_memory import memory
 from app.workspace.workspace import workspace
 
+
 class PMAgent(BaseAgent):
-    """Project Manager Agent - Breaks down projects into tasks."""
-    
+
     def __init__(self):
         super().__init__(
             "PM Agent",
-            "Project Manager",
+            "Senior Project Manager",
             agent_key="pm",
         )
-        self.model = "llama3.2:3b"
-    
+
+        self.model = "llama3.2:1b"
+
     async def run(self, task: str):
         return await self.plan_project(task)
-    
-    async def plan_project(self, project_analysis: str):
-        """Create a detailed project plan from CEO analysis."""
-        
-        print("PM Agent: Creating project plan...")
-        
+
+    async def plan_project(self, task: str):
+
+        print("PM Agent Started")
+
+        ceo_summary = self._limit(
+            memory.get("ceo") or "",
+            1800,
+        )
+
+        project = self._limit(
+            task,
+            900,
+        )
+
         prompt = f"""
-You are the Project Manager for an AI Software Company.
+You are a Senior Project Manager.
 
-Based on the CEO's project analysis below, create a detailed project plan with tasks, timeline estimates, and team assignments.
+Create a concise implementation plan for the project.
 
-CEO PROJECT ANALYSIS:
-{project_analysis}
+ORIGINAL PROJECT:
+{project}
 
-Create a project plan with the following structure:
+CEO ANALYSIS:
+{ceo_summary}
 
-PROJECT PLAN
-============
+Return Markdown.
 
-PROJECT NAME
-[Extract from analysis]
+# Project Plan
 
-OBJECTIVES
-[List 3-5 key objectives]
+## Project Objective
 
-DELIVERABLES
-[What will be delivered]
+## Scope
 
-TASKS
-[Break down into phases with specific tasks]
-Phase 1: Setup & Foundation
-- Task 1: Description [2 days] [Team: Backend]
-- Task 2: Description [3 days] [Team: Frontend]
+## Functional Requirements
 
-Phase 2: Core Features
-[Tasks...]
+## Technical Workstreams
 
-Phase 3: Integration
-[Tasks...]
+## Milestones
 
-Phase 4: Testing & Deployment
-[Tasks...]
+## Dependencies
 
-TEAM STRUCTURE
-- Backend: [Skills needed]
-- Frontend: [Skills needed]
-- DevOps: [Skills needed]
-- QA: [Skills needed]
+## Risks
 
-TIMELINE
-Total estimated: [X] weeks
+## Testing
 
-RISKS
-- Risk 1: Description [Impact: High/Medium/Low]
-- Risk 2: Description [Impact: High/Medium/Low]
+## Deployment
 
-DEPENDENCIES
-- [List any task dependencies]
+## Delivery Priorities
 
-SUCCESS METRICS
-- [How to measure success]
-
-Important rules:
-1. Use only information from the CEO analysis
-2. Make realistic estimates
-3. Break down large tasks into smaller ones
-4. Consider dependencies between tasks
-5. If something is unknown, say: "Not specified in project context"
+Rules:
+- Be concrete and concise.
+- Do not invent completed work.
+- Use only the project request and CEO analysis.
+- Keep the response under approximately 1,500 words.
 """
 
-        result = await self.think_with_context(prompt)
-        
-        # Save to memory
-        self.remember("pm_plan", result)
-        memory.save("pm", result)
-        workspace.save("project/pm_plan.md", result)
-        
+        # IMPORTANT:
+        # Use the short direct generation path rather than the
+        # context-heavy think_with_context() path.
+        result = await self.think(prompt)
+
+        self.remember(
+            task,
+            result,
+        )
+
+        memory.save(
+            "pm",
+            result,
+        )
+
+        workspace.save(
+            "project_manager.md",
+            result,
+        )
+
+        workspace.save(
+            "pm.md",
+            result,
+        )
+
+        workspace.save(
+            "planning/project_plan.md",
+            result,
+        )
+
+        print("PM plan saved")
+
         return result
+
+    @staticmethod
+    def _limit(
+        value: str,
+        maximum: int,
+    ) -> str:
+
+        value = str(value or "")
+
+        if len(value) <= maximum:
+            return value
+
+        return (
+            value[:maximum]
+            + "\n[Context truncated.]"
+        )

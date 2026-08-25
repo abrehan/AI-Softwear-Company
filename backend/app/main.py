@@ -1,4 +1,5 @@
-﻿from fastapi import FastAPI
+﻿from app.api.routes.workflow import router as workflow_router
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
@@ -100,4 +101,8 @@ def api_health():
         "status": "healthy",
     }
 
+
+
+
+app.include_router(workflow_router)
 
