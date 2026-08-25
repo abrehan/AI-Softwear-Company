@@ -1,7 +1,14 @@
-﻿from sqlalchemy import create_engine
+import os
+
+from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = "sqlite:///./virtual_office.db"
+
+if os.getenv("VERCEL"):
+    DATABASE_URL = "sqlite:////tmp/virtual_office.db"
+else:
+    DATABASE_URL = "sqlite:///./virtual_office.db"
+
 
 engine = create_engine(
     DATABASE_URL,
@@ -24,4 +31,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
