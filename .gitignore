@@ -40,7 +40,6 @@ generated_code/
 .vercel
 .env*
 # AI workspace/generated artifacts
-backend/app/workspace/
 backend/generated/
 backend/generated_code/
 backend/.qa_orchestrator/
