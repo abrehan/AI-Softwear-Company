@@ -1,0 +1,256 @@
+As the Git agent, I will complete my responsibility for this project.
+
+**AUTHORITATIVE PROJECT CONTEXT**
+
+\# AI Software Company — Authoritative Project Context
+
+
+
+\## Project Identity
+
+
+
+Name: AI Software Company
+
+
+
+Purpose:
+
+Virtual AI Office / AI Software Company system with specialized AI agents for planning, development, testing, security, operations, and business functions.
+
+
+
+\## Confirmed Backend
+
+
+
+\- FastAPI backend
+
+\- Python
+
+\- SQLAlchemy database layer
+
+\- Agent Registry
+
+\- REST API
+
+\- Ollama local AI integration
+
+\- Model Router
+
+\- Project memory/workspace system
+
+
+
+\## Confirmed AI Engine
+
+
+
+Provider:
+
+Ollama
+
+
+
+Endpoint:
+
+http://127.0.0.1:11434
+
+
+
+Confirmed available models include:
+
+
+
+\- llama3.2:1b
+
+\- llama3.2:3b
+
+\- llama3.1:8b
+
+\- qwen2.5-coder:7b
+
+\- qwen2.5-coder:32b
+
+\- deepseek-coder:6.7b
+
+\- deepseek-coder-v2:latest
+
+
+
+\## Confirmed Agent Registry
+
+
+
+The current registry contains:
+
+
+
+\- CEO
+
+\- PM
+
+\- Project Manager
+
+\- CTO
+
+\- File Planner
+
+\- Backend
+
+\- Frontend
+
+\- Database
+
+\- AI
+
+\- ML
+
+\- Prompt
+
+\- Security
+
+\- DevSecOps
+
+\- Reviewer
+
+\- QA
+
+\- Writer
+
+\- Git
+
+\- DevOps
+
+\- Marketing
+
+\- SEO
+
+\- Social
+
+\- Sales
+
+\- Support
+
+\- Business
+
+\- UI/UX
+
+\- Finance
+
+\- Legal
+
+\- HR
+
+\- Recruiter
+
+
+
+\## Confirmed Working Components
+
+
+
+\- FastAPI application imports successfully.
+
+\- Agent registry imports successfully.
+
+\- CEO Agent initializes successfully.
+
+\- CEO Agent is routed to llama3.2:3b.
+
+\- Backend Agent is routed to qwen2.5-coder:7b.
+
+\- Ollama is reachable locally.
+
+\- AI agent execution endpoint works.
+
+\- CEO output is persisted to project workspace.
+
+\- CEO project summary is persisted to:
+
+&#x20; requirements/project\_summary.md
+
+\- Backend Agent can generate Python files.
+
+\- Generated Python files are syntax validated.
+
+\- Backend Agent has automatic Python repair attempts.
+
+
+
+\## Current Known Issues
+
+
+
+\- Agent context should use one authoritative project context.
+
+\- Generated workspace files should not trigger Uvicorn development-server reloads.
+
+\- Long-running AI generation should eventually run as a background job instead of blocking the HTTP request.
+
+\- CEO should distinguish verified project facts from recommendations.
+
+\- Agent outputs should not become authoritative project facts automatically.
+
+
+
+\## Context Rules
+
+
+
+Only information explicitly marked as confirmed should be treated as project facts.
+
+
+
+Agent recommendations must remain recommendations.
+
+
+
+Generated code must be validated before being treated as valid project code.
+
+
+
+Agent output must not automatically overwrite authoritative project state.
+
+
+
+\## Current Development Direction
+
+
+
+The next development focus is to stabilize the Virtual AI Office orchestration and context system before expanding autonomous code generation.
+
+
+
+Recommended sequence:
+
+
+
+1\. Authoritative project context
+
+2\. CEO decision
+
+3\. Project Manager planning
+
+4\. CTO architecture
+
+5\. Specialist implementation
+
+6\. QA validation
+
+7\. Security review
+
+8\. DevOps validation
+
+9\. Final project status update
+
+
+
+===================================================
+AUTHORITY RULE
+===================================================
+
+Only the project_context.md content above is authoritative.
+
+Agent outputs, recommendations, generated files, plans, architecture documents, and generated code
+--- END WRITER OUTPUT ---

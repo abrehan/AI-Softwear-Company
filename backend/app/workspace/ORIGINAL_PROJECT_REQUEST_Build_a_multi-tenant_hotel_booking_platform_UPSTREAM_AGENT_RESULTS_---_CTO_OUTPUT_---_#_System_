@@ -1,0 +1,66 @@
+# AI Architecture
+
+## Overview
+
+The Multi-tenant Hotel Booking Platform is a software development project aimed at building a scalable and secure hotel booking system. The platform will allow multiple hotels to be managed and booked by different users, with each hotel having its own set of features and functionalities.
+
+## Confirmed Current Architecture
+
+* FastAPI backend
+* Python
+* SQLAlchemy database layer
+* Agent Registry
+* REST API
+* Ollama local AI integration
+* Model Router
+* Project memory/workspace system
+
+## Confirmed AI Engine
+
+* Provider: Ollama
+* Endpoint: http://127.0.0.1:11434
+* Confirmed available models include:
+	+ llama3.2:1b
+	+ llama3.2:3b
+	+ llama3.1:8b
+	+ qwen2.5-coder:7b
+	+ qwen2.5-coder:32b
+	+ deepseek-coder:6.7b
+	+ deepseek-coder-v2:latest
+
+## Confirmed Agent Registry
+
+* The current registry contains:
+	+ CEO
+	+ PM
+	+ Project Manager
+	+ CTO
+	+ File Planner
+	+ Backend
+	+ Fron
+
+## AI Workflow
+
+1. **Hotel Booking**: The user submits a hotel booking request, which is processed by the FastAPI backend.
+2. **AI Engine**: The FastAPI backend sends the request to the Ollama AI engine, which processes the request and generates a response.
+3. **Model Router**: The Ollama AI engine uses the Model Router to select the most suitable model for the request.
+4. **Local Models**: The Model Router uses local models to process the request.
+5. **Cloud Models**: The Model Router uses cloud models to process the request.
+6. **Tool Calling**: The Model Router calls the necessary tools to process the request.
+7. **Memory Strategy**: The Model Router uses a memory strategy to store and retrieve data.
+8. **Vector Database**: The Model Router uses a vector database to store and retrieve data.
+9. **RAG Pipeline**: The Model Router uses a RAG pipeline to process the request.
+10. **Embedding Strategy**: The Model Router uses an embedding strategy to process the request.
+11. **Agent Communication**: The Model Router communicates with the agent registry to retrieve data.
+12. **Error Handling**: The Model Router uses error handling to handle errors.
+13. **Monitoring**: The Model Router uses monitoring to track performance.
+14. **AI Security**: The Model Router uses AI security to protect data.
+
+## Future Improvements
+
+* Implement a more robust testing framework to ensure the quality of the backend API.
+* Conduct a thorough security audit to ensure the security of the platform.
+* Implement a more efficient memory strategy to improve performance.
+* Use a more advanced vector database to improve data storage and retrieval.
+* Implement a more robust error handling mechanism to handle errors.
+* Use monitoring to track performance and identify areas for improvement.

@@ -1,0 +1,65 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.database import Base, engine
+
+from app.models.user import User
+from app.models.project import Project
+
+from app.api.routes.auth import router as auth_router
+from app.api.routes.users import router as users_router
+from app.api.routes.projects import router as projects_router
+
+
+app = FastAPI(
+    title="AI Software Company",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+Base.metadata.create_all(bind=engine)
+
+
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(projects_router)
+
+
+@app.get("/")
+def root():
+    return {
+        "name": "AI Software Company",
+        "version": app.version,
+        "status": "online",
+    }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+    }
+
+
+@app.get("/api/health")
+def api_health():
+    return {
+        "status": "healthy",
+    }

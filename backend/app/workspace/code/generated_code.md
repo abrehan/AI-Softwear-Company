@@ -1,0 +1,1 @@
+Ollama HTTP Error 404

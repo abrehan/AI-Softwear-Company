@@ -1,0 +1,102 @@
+{
+  "generated_backend_exists": true,
+  "python_compile": true,
+  "module_imports": [
+    {
+      "module": "app.database",
+      "status": "PASS"
+    },
+    {
+      "module": "app.main",
+      "status": "PASS"
+    },
+    {
+      "module": "app.core.config",
+      "status": "PASS"
+    },
+    {
+      "module": "app.core.security",
+      "status": "PASS"
+    },
+    {
+      "module": "app.models.user",
+      "status": "PASS"
+    },
+    {
+      "module": "app.models.project",
+      "status": "PASS"
+    },
+    {
+      "module": "app.schemas.user",
+      "status": "PASS"
+    },
+    {
+      "module": "app.schemas.project",
+      "status": "PASS"
+    },
+    {
+      "module": "app.services.user_service",
+      "status": "PASS"
+    },
+    {
+      "module": "app.services.auth_service",
+      "status": "PASS"
+    },
+    {
+      "module": "app.services.project_service",
+      "status": "PASS"
+    },
+    {
+      "module": "app.api.routes.users",
+      "status": "PASS"
+    },
+    {
+      "module": "app.api.routes.auth",
+      "status": "PASS"
+    },
+    {
+      "module": "app.api.routes.projects",
+      "status": "PASS"
+    }
+  ],
+  "fastapi_import": true,
+  "openapi_available": true,
+  "openapi_paths": [
+    "/login",
+    "/me",
+    "/users/",
+    "/users/{user_id}",
+    "/projects/",
+    "/projects/{project_id}",
+    "/",
+    "/health",
+    "/api/health"
+  ],
+  "http_checks": [
+    {
+      "endpoint": "/",
+      "status": "PASS",
+      "http_status": 200,
+      "body": "{\"name\":\"AI Software Company\",\"version\":\"1.0.0\",\"status\":\"online\"}"
+    },
+    {
+      "endpoint": "/health",
+      "status": "PASS",
+      "http_status": 200,
+      "body": "{\"status\":\"healthy\"}"
+    },
+    {
+      "endpoint": "/api/health",
+      "status": "PASS",
+      "http_status": 200,
+      "body": "{\"status\":\"healthy\"}"
+    },
+    {
+      "endpoint": "/openapi.json",
+      "status": "PASS",
+      "http_status": 200,
+      "body": "{\"openapi\":\"3.1.0\",\"info\":{\"title\":\"AI Software Company\",\"version\":\"1.0.0\"},\"paths\":{\"/token\":{\"post\":{\"tags\":[\"auth\"],\"summary\":\"Login For Access Token\",\"operationId\":\"login_for_access_token_token_post\",\"requestBody\":{\"content\":{\"application/x-www-form-urlencoded\":{\"schema\":{\"$ref\":\"#/components/schemas/Body_login_for_access_token_token_post\"}}},\"required\":true},\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/users/register\":{\"post\":{\"tags\":[\"users\"],\"summary\":\"Register User\",\"operationId\":\"register_user_users_register_post\",\"requestBody\":{\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/UserCreate\"}}},\"required\":true},\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/UserRead\"}}}},\"422\":{\"description\":\"Validation Error\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/HTTPValidationError\"}}}}}}},\"/users/\":{\"get\":{\"tags\":[\"users\"],\"summary\":\"List Users\",\"operationId\":\"list_users_users__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"items\":{\"$ref\":\"#/components/schemas/UserRead\"},\"type\":\"array\",\"title\":\"Response List Users Users  Get\"}}}}}}},\"/users/me/\":{\"get\":{\"tags\":[\"users\"],\"summary\":\"Read Users Me\",\"operationId\":\"read_users_me_users_me__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/UserRead\"}}}}},\"security\":[{\"OAuth2PasswordBearer\":[]}]}},\"/projects/\":{\"get\":{\"tags\":[\"projects\"],\"summary\":\"Get Projects\",\"operationId\":\"get_projects_projects__get\",\"responses\":{\"200\":{\"description\":\"Successful Response\",\"content\":{\"application/json\":{\"schema\":{\"items\":{\"$ref\":\"#/components/schemas/ProjectRead\"},\"type\":\"array\",\"title\":\""
+    }
+  ],
+  "overall": "PASS"
+}
