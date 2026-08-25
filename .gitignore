@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
@@ -12,7 +12,6 @@ venv/
 node_modules/
 dist/
 coverage/
-
 # Environment / secrets
 .env
 .env.*
@@ -20,50 +19,40 @@ coverage/
 *.env.*
 !.env.example
 !.env.production.example
-
 # IDE
 .vscode/
 .idea/
-
 # Logs
 *.log
-
 # OS
 Thumbs.db
 .DS_Store
-
 # AI Software Company runtime/generated data
 .qa_orchestrator/
 generated/
 generated_code/
-
 # Python runtime/cache
 *.pyc
-
 # Local databases / runtime state
 *.db
 *.sqlite
 *.sqlite3
 .vercel
 .env*
-
 # AI workspace/generated artifacts
 backend/app/workspace/
 backend/generated/
 backend/generated_code/
 backend/.qa_orchestrator/
-
 # Orchestrator backup files
 backend/app/engineering/orchestrator/*.bak
 backend/app/engineering/orchestrator/*.backup
 backend/app/engineering/orchestrator/*.before_prompt_fix
-
 # Development backups and generated release candidates
 backend/release_candidate_old/
 *.before_*
 *.backup
 *.backup2
-
 backend/release_candidate/
-*.backup
-*.backup2
+# Development backup files
+*_backup.py
