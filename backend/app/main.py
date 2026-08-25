@@ -1,4 +1,4 @@
-﻿from app.api.routes.workflow import router as workflow_router
+from app.api.routes.workflow import router as workflow_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -104,5 +104,20 @@ def api_health():
 
 
 
+
+# --------------------------------------------------
+# API STATUS
+# --------------------------------------------------
+
+@app.get("/api/status")
+def api_status():
+    return {
+        "name": "AI Software Company",
+        "version": app.version,
+        "backend": "online",
+        "status": "healthy",
+    }
+
 app.include_router(workflow_router)
+
 
