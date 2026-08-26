@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 
@@ -26,6 +26,12 @@ class User(Base):
 
     hashed_password = Column(
         String(255),
+        nullable=False,
+    )
+
+    role = Column(
+        String(20),
+        default="user",
         nullable=False,
     )
 
