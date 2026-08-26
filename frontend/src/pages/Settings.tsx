@@ -1,81 +1,46 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  FormControlLabel,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { Alert, Button, Card, CardContent, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, Switch, Table, TableBody, TableCell, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material";
+import { Add, Delete, Edit, LockReset } from "@mui/icons-material";
+import { useAuth } from "../context/AuthContext";
 
 const SETTINGS_KEY = "ai_software_company_settings";
+const emptyNewUser = { username: "", email: "", password: "" };
+interface ManagedUser { id: number; username: string; email: string; role: "admin" | "user"; disabled: boolean; created_at: string; }
 
 const Settings: React.FC = () => {
-  const [compactMode, setCompactMode] = useState(false);
-  const [notifications, setNotifications] = useState(true);
+  const { token, user, refreshUser } = useAuth();
+  const [compactMode, setCompactMode] = useState(false), [notifications, setNotifications] = useState(true);
+  const [users, setUsers] = useState<ManagedUser[]>([]), [loadingUsers, setLoadingUsers] = useState(false);
+  const [error, setError] = useState(""), [success, setSuccess] = useState("");
+  const [newUserOpen, setNewUserOpen] = useState(false), [editUser, setEditUser] = useState<ManagedUser | null>(null);
+  const [newUser, setNewUser] = useState(emptyNewUser), [editForm, setEditForm] = useState({ email: "", role: "user", disabled: false });
+  const [passwordOpen, setPasswordOpen] = useState(false), [passwordForm, setPasswordForm] = useState({ current_password: "", new_password: "", confirm_password: "" });
 
-  useEffect(() => {
-    const saved = localStorage.getItem(SETTINGS_KEY);
+  useEffect(() => { const saved = localStorage.getItem(SETTINGS_KEY); if (saved) { try { const p = JSON.parse(saved); setCompactMode(Boolean(p.compactMode)); setNotifications(p.notifications !== false); } catch {} } }, []);
+  useEffect(() => { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ compactMode, notifications })); }, [compactMode, notifications]);
 
-    if (!saved) {
-      return;
-    }
+  const api = async (path: string, options: RequestInit = {}) => {
+    const response = await fetch(path, { ...options, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, ...(options.headers || {}) } });
+    if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.detail || `Request failed (${response.status})`); }
+    return response.status === 204 ? null : response.json();
+  };
+  const loadUsers = async () => { if (user?.role !== "admin") return; setLoadingUsers(true); try { setUsers(await api("/api/users/")); } catch (e) { setError(e instanceof Error ? e.message : "Unable to load users"); } finally { setLoadingUsers(false); } };
+  useEffect(() => { void loadUsers(); }, [user?.role, token]);
 
-    try {
-      const parsed = JSON.parse(saved);
-      setCompactMode(Boolean(parsed.compactMode));
-      setNotifications(parsed.notifications !== false);
-    } catch {
-      // Ignore malformed local settings.
-    }
-  }, []);
+  const changePassword = async () => { setError(""); setSuccess(""); if (passwordForm.new_password !== passwordForm.confirm_password) { setError("New password and confirmation do not match."); return; } try { await api("/api/users/me/password", { method: "POST", body: JSON.stringify({ current_password: passwordForm.current_password, new_password: passwordForm.new_password }) }); setPasswordOpen(false); setPasswordForm({ current_password: "", new_password: "", confirm_password: "" }); setSuccess("Password changed successfully."); } catch (e) { setError(e instanceof Error ? e.message : "Unable to change password"); } };
+  const createUser = async () => { try { await api("/api/users/", { method: "POST", body: JSON.stringify(newUser) }); setNewUser(emptyNewUser); setNewUserOpen(false); setSuccess("User created successfully."); await loadUsers(); } catch (e) { setError(e instanceof Error ? e.message : "Unable to create user"); } };
+  const saveUser = async () => { if (!editUser) return; try { await api(`/api/users/${editUser.id}`, { method: "PATCH", body: JSON.stringify(editForm) }); setEditUser(null); setSuccess("User updated successfully."); await loadUsers(); await refreshUser(); } catch (e) { setError(e instanceof Error ? e.message : "Unable to update user"); } };
+  const deleteUser = async (managed: ManagedUser) => { if (!window.confirm(`Delete user '${managed.username}'? This cannot be undone.`)) return; try { await api(`/api/users/${managed.id}`, { method: "DELETE" }); setSuccess("User deleted successfully."); await loadUsers(); } catch (e) { setError(e instanceof Error ? e.message : "Unable to delete user"); } };
 
-  useEffect(() => {
-    localStorage.setItem(
-      SETTINGS_KEY,
-      JSON.stringify({
-        compactMode,
-        notifications,
-      })
-    );
-  }, [compactMode, notifications]);
-
-  return (
-    <>
-      <Typography variant="h4" gutterBottom>
-        Settings
-      </Typography>
-
-      <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Manage your Virtual Office preferences.
-      </Typography>
-
-      <Card>
-        <CardContent>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={notifications}
-                onChange={(e) => setNotifications(e.target.checked)}
-              />
-            }
-            label="Enable notifications"
-          />
-
-          <br />
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={compactMode}
-                onChange={(e) => setCompactMode(e.target.checked)}
-              />
-            }
-            label="Compact dashboard mode"
-          />
-        </CardContent>
-      </Card>
-    </>
-  );
+  return <Stack spacing={3}>
+    <div><Typography variant="h4" gutterBottom>Settings</Typography><Typography color="text.secondary">Manage Virtual Office preferences, security, and users.</Typography></div>
+    {error && <Alert severity="error" onClose={() => setError("")}>{error}</Alert>}{success && <Alert severity="success" onClose={() => setSuccess("")}>{success}</Alert>}
+    <Card><CardContent><Typography variant="h6" gutterBottom>Preferences</Typography><FormControlLabel control={<Switch checked={notifications} onChange={e => setNotifications(e.target.checked)} />} label="Enable notifications" /><br /><FormControlLabel control={<Switch checked={compactMode} onChange={e => setCompactMode(e.target.checked)} />} label="Compact dashboard mode" /></CardContent></Card>
+    <Card><CardContent><Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2}><div><Typography variant="h6">Account Security</Typography><Typography color="text.secondary">Signed in as {user?.username}</Typography></div><Button variant="contained" startIcon={<LockReset />} onClick={() => setPasswordOpen(true)}>Change Password</Button></Stack></CardContent></Card>
+    {user?.role === "admin" && <Card><CardContent><Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" spacing={2} sx={{ mb: 2 }}><div><Typography variant="h6">User Management</Typography><Typography color="text.secondary">Create, edit, disable, and remove users.</Typography></div><Button variant="contained" startIcon={<Add />} onClick={() => setNewUserOpen(true)}>Add User</Button></Stack><Table size="small"><TableHead><TableRow><TableCell>User</TableCell><TableCell>Email</TableCell><TableCell>Role</TableCell><TableCell>Status</TableCell><TableCell align="right">Actions</TableCell></TableRow></TableHead><TableBody>{users.map(u => <TableRow key={u.id} hover><TableCell>{u.username}</TableCell><TableCell>{u.email}</TableCell><TableCell><Chip size="small" label={u.role} color={u.role === "admin" ? "primary" : "default"} /></TableCell><TableCell><Chip size="small" label={u.disabled ? "Disabled" : "Active"} color={u.disabled ? "warning" : "success"} /></TableCell><TableCell align="right"><Tooltip title="Edit user"><IconButton onClick={() => { setEditUser(u); setEditForm({ email: u.email, role: u.role, disabled: u.disabled }); }}><Edit /></IconButton></Tooltip><Tooltip title="Delete user"><IconButton color="error" disabled={u.id === user.id} onClick={() => void deleteUser(u)}><Delete /></IconButton></Tooltip></TableCell></TableRow>)}</TableBody></Table>{loadingUsers && <Typography color="text.secondary" sx={{ mt: 2 }}>Loading users…</Typography>}</CardContent></Card>}
+    <Dialog open={passwordOpen} onClose={() => setPasswordOpen(false)} fullWidth maxWidth="sm"><DialogTitle>Change Password</DialogTitle><DialogContent><Stack spacing={2} sx={{ pt: 1 }}><TextField label="Current password" type="password" value={passwordForm.current_password} onChange={e => setPasswordForm({ ...passwordForm, current_password: e.target.value })} fullWidth /><TextField label="New password" type="password" helperText="Minimum 8 characters" value={passwordForm.new_password} onChange={e => setPasswordForm({ ...passwordForm, new_password: e.target.value })} fullWidth /><TextField label="Confirm new password" type="password" value={passwordForm.confirm_password} onChange={e => setPasswordForm({ ...passwordForm, confirm_password: e.target.value })} fullWidth /></Stack></DialogContent><DialogActions><Button onClick={() => setPasswordOpen(false)}>Cancel</Button><Button variant="contained" onClick={() => void changePassword()}>Change Password</Button></DialogActions></Dialog>
+    <Dialog open={newUserOpen} onClose={() => setNewUserOpen(false)} fullWidth maxWidth="sm"><DialogTitle>Add User</DialogTitle><DialogContent><Stack spacing={2} sx={{ pt: 1 }}><TextField label="Username" value={newUser.username} onChange={e => setNewUser({ ...newUser, username: e.target.value })} fullWidth /><TextField label="Email" type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} fullWidth /><TextField label="Temporary password" type="password" helperText="Minimum 8 characters" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} fullWidth /></Stack></DialogContent><DialogActions><Button onClick={() => setNewUserOpen(false)}>Cancel</Button><Button variant="contained" onClick={() => void createUser()}>Create User</Button></DialogActions></Dialog>
+    <Dialog open={Boolean(editUser)} onClose={() => setEditUser(null)} fullWidth maxWidth="sm"><DialogTitle>Edit User</DialogTitle><DialogContent><Stack spacing={2} sx={{ pt: 1 }}><TextField label="Username" value={editUser?.username || ""} disabled fullWidth /><TextField label="Email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} fullWidth /><FormControl fullWidth><InputLabel>Role</InputLabel><Select label="Role" value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })}><MenuItem value="user">User</MenuItem><MenuItem value="admin">Admin</MenuItem></Select></FormControl><FormControlLabel control={<Switch checked={editForm.disabled} onChange={e => setEditForm({ ...editForm, disabled: e.target.checked })} />} label="Disable account" /></Stack></DialogContent><DialogActions><Button onClick={() => setEditUser(null)}>Cancel</Button><Button variant="contained" onClick={() => void saveUser()}>Save Changes</Button></DialogActions></Dialog>
+  </Stack>;
 };
-
 export default Settings;
