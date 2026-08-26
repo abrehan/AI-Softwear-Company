@@ -1,19 +1,27 @@
-﻿import axios from "axios";
+import axios from "axios";
 
-export const TOKEN_STORAGE_KEY = "ai-software-company.access-token";
+export const TOKEN_STORAGE_KEY = "ai_software_company_access_token";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8010",
+  baseURL: "/api",
 });
 
 api.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem(TOKEN_STORAGE_KEY);
-
+  const token = localStorage.getItem(TOKEN_STORAGE_KEY);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;
