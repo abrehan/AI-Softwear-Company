@@ -1,7 +1,7 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import Base, engine
+from app.database import Base, engine, ensure_user_role_column
 
 # Models
 from app.models.user import User
@@ -19,7 +19,6 @@ from app.api.routes.registry import router as registry_router
 from app.api.routes.ai import router as ai_router
 from app.api.routes.workflow import router as workflow_router
 
-
 app = FastAPI(
     title="AI Software Company",
     version="1.0.0",
@@ -27,11 +26,6 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
-
-
-# --------------------------------------------------
-# CORS
-# --------------------------------------------------
 
 app.add_middleware(
     CORSMiddleware,
@@ -46,20 +40,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# --------------------------------------------------
-# DATABASE
-# --------------------------------------------------
-
 Base.metadata.create_all(bind=engine)
-
-
-# --------------------------------------------------
-# API ROUTES
-# --------------------------------------------------
+ensure_user_role_column()
 
 API_PREFIX = "/api"
-
 app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(users_router, prefix=API_PREFIX)
 app.include_router(projects_router, prefix=API_PREFIX)
@@ -69,41 +53,14 @@ app.include_router(registry_router)
 app.include_router(ai_router)
 app.include_router(workflow_router, prefix=API_PREFIX)
 
-
-# --------------------------------------------------
-# ROOT
-# --------------------------------------------------
-
 @app.get("/")
 def root():
-    return {
-        "name": "AI Software Company",
-        "version": app.version,
-        "status": "online",
-    }
-
-
-# --------------------------------------------------
-# HEALTH
-# --------------------------------------------------
+    return {"name": "AI Software Company", "version": app.version, "status": "online"}
 
 @app.get("/api/health")
 def health():
-    return {
-        "status": "healthy",
-    }
-
-
-# --------------------------------------------------
-# STATUS
-# --------------------------------------------------
+    return {"status": "healthy"}
 
 @app.get("/api/status")
 def status():
-    return {
-        "name": "AI Software Company",
-        "version": app.version,
-        "backend": "online",
-        "status": "healthy",
-    }
-
+    return {"name": "AI Software Company", "version": app.version, "backend": "online", "status": "healthy"}
