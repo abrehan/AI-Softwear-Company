@@ -2,15 +2,19 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 
-from app.api.routes.agents import router as agent_router
-from app.api.routes.memory import router as memory_router
-from app.api.routes.workflow import router as workflow_router
-from app.api.routes.company import router as company_router
+from app.api.routes.projects import router as project_router
+from app.api.routes.tasks import router as task_router
+from app.api.routes.auth import router as auth_router
+from app.persistence import store
 
 app = FastAPI(
     title="AI Software Company",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+async def initialize_storage():
+    store.initialize()
 
 # ==========================================
 # CORS
@@ -28,33 +32,9 @@ app.add_middleware(
 # API ROUTES
 # ==========================================
 
-# Agents API
-app.include_router(
-    agent_router,
-    prefix="/api",
-    tags=["Agents"]
-)
-
-# Memory API
-app.include_router(
-    memory_router,
-    prefix="/api/memory",
-    tags=["Memory"]
-)
-
-# Workflow Engine API
-app.include_router(
-    workflow_router,
-    prefix="/api",
-    tags=["Workflow"]
-)
-
-# Company API
-app.include_router(
-    company_router,
-    prefix="/api",
-    tags=["Company"]
-)
+app.include_router(project_router, prefix="/api")
+app.include_router(task_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
 
 # ==========================================
 # ROOT
@@ -64,6 +44,15 @@ app.include_router(
 async def root():
     return {
         "message": "AI Software Company Backend Running"
+    }
+# ==========================================
+# HEALTH CHECK
+# ==========================================
+
+@app.get("/api/health")
+async def health():
+    return {
+        "status": "healthy"
     }
 
 # ==========================================
@@ -87,8 +76,7 @@ async def status():
     except Exception:
         ollama = "Offline"
 
-    # Change later when PostgreSQL/MySQL is connected
-    database = "Not Connected"
+    database = "SQLite connected"
 
     return {
         "version": app.version,
